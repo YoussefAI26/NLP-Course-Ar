@@ -129,7 +129,6 @@ dmypy.json
 .pyre/
 _site/
 .vscode/
-Gemfile.lock
 *.DS_Store
 vendor/
 .bundle/
