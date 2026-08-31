@@ -1,54 +1,54 @@
 ---
 layout: default
-title: Natural Language Processing
+title: معالجة اللغة الطبيعية
 nav_order: 1
 permalink: /
 ---
 
-# Natural Language Processing
+# معالجة اللغة الطبيعية (NLP)
 {: .fs-10 }
 
-Mario Graff (mgraffg en ieee.org)
+ماريو غراف Mario Graff (mgraffg en ieee.org)
 {: .fs-7 }
 
 
 ---
 
-# Introduction
+# المقدمة (Introduction)
 
-In our daily life, we use applications based on Natural Language Processing (NLP) techniques. It is common to use a virtual assistant such as Siri or Alexa or call a call center where the options are selected orally, or even use the dictation service of the mobile. When visiting a foreign country or learning another language is common to use the service of an online translation system, e.g., Google Translate. Other NLP applications might not be as evident as the ones mentioned. For example, Twitter suggests following a conversation based on the topic. Grammarly helps in the writing style; this can also be done with Word and Google Docs options. On the other hand, there are NLP applications developed to eliciting information from opinions expressed on social media or the web.
+في حياتنا اليومية، نستخدم تطبيقات تستند إلى تقنيات معالجة اللغة الطبيعية (Natural Language Processing - NLP). فمن الشائع استخدام المساعدات الافتراضية مثل Siri أو Alexa، أو الاتصال بمراكز الخدمة الهاتفية حيث تُحدد الخيارات شفهيًا، أو حتى استخدام خدمة الإملاء الصوتي في الهواتف المحمولة. وعند زيارة دولة أجنبية أو تعلم لغة أخرى، من الشائع استخدام خدمات أنظمة الترجمة الفورية عبر الإنترنت، مثل ترجمة جوجل (Google Translate). قد لا تكون تطبيقات معالجة اللغة الطبيعية الأخرى بنفس الدرجة من الوضوح؛ على سبيل المثال، يقترح تويتر متابعة المحادثات بناءً على الموضوع. ويساعد Grammarly في تحسين أسلوب الكتابة، وهو ما يمكن القيام به أيضًا عبر خيارات Word وGoogle Docs. من ناحية أخرى، تم تطوير تطبيقات لـ NLP لاستخلاص المعلومات والآراء المعبَّر عنها في وسائل التواصل الاجتماعي أو الويب.
 
-The goal of the course is to introduce the students to the field of Natural Language Processing. The most relevant NLP applications will be described through lectures, reading, and programming activities; these include collocations, language models, text categorization, word embeddings, question answering, and sentence entailment, among others.
+يهدف هذا المساق التعليمي إلى تعريف الطلاب بمجال معالجة اللغة الطبيعية (NLP). وسيتم شرح أهم تطبيقات معالجة اللغة الطبيعية من خلال المحاضرات، القراءات، والأنشطة البرمجية؛ وتشمل هذه التطبيقات المتلازمات اللفظية (Collocations)، نماذج اللغة (Language Models)، تصنيف النصوص (Text Categorization)، تضمينات الكلمات (Word Embeddings)، الإجابة عن الأسئلة (Question Answering)، والاستلزام اللغوي (Sentence Entailment)، من بين مواضيع أخرى.
 
-# Notation
+# الترميز والرموز (Notation)
 
-|Symbol            | Meaning                                                  |
+|الرمز            | المعنى                                                  |
 |------------------|----------------------------------------------------------|
-|$$x$$             | Variable commonly used as input                          |
-|$$y$$             | Variable commonly used as output                         |
-|$$w$$             | Variable mostly used for words (tokens)                  |
-|$$\mathbb R$$     | The real numbers                                         |
-|$$\mathbf x$$     | Column vector $$\mathbf x \in \mathbb R^d$$              |
-|$$d$$             | Dimension                                                |
-|$$\mathbf w^\intercal \cdot \mathbf x$$ | Dot  product where $$\mathbf w$$ and $$\mathbf x \in \mathbb R^d$$ |
-|$$\mathcal D$$    | Dataset of pairs $$\{(x_i, y_i) \mid i=1, \dots N\}$$    |
-|$$\mathcal T$$  | Training set| 
-|$$\mathcal V$$| Validation set |
-|$$\mathcal G$$| Test (Gold) set |
-|$$N$$             | Number of examples                                       | 
-|$$K$$             | Number of classes or labels                              |
-|$$\mathbb P(\cdot)$$  | Probability distribution                             |
-|$$\mathcal X, \mathcal Y$$    | Random variables                             |
-|$$\mathcal N(\mu, \sigma^2)$$    | Normal distribution with parameters $$\mu$$ and $$\sigma^2$$|
-|$$f_{\mathcal X}$$| $$\mathcal X$$'s probability density function (pdf)      |
-|$$\mathbb 1(e)$$     | Indicator function; $$1$$ only if $$e$$ is true          |
-|$$\Omega$$        | Search space                                             |
-|$$\mathbb V$$     | Variance                                                 |
-|$$\mathbb E$$     | Expectation                                                 |
+|$$x$$             | متغير يُستخدم عادة كـ مدخل (Input)                          |
+|$$y$$             | متغير يُستخدم عادة كـ مخرج (Output)                         |
+|$$w$$             | متغير يُستخدم غالبًا للكلمات (Tokens)                  |
+|$$\mathbb R$$     | مجموعة الأعداد الحقيقية (Real numbers)                                         |
+|$$\mathbf x$$     | متجه عمودي (Column vector) $$\mathbf x \in \mathbb R^d$$              |
+|$$d$$             | البُعد (Dimension)                                                |
+|$$\mathbf w^\intercal \cdot \mathbf x$$ | الضرب النقطي (Dot product) حيث $$\mathbf w$$ و $$\mathbf x \in \mathbb R^d$$ |
+|$$\mathcal D$$    | مجموعة البيانات (Dataset) للأزواج $$\{(x_i, y_i) \mid i=1, \dots N\}$$    |
+|$$\mathcal T$$  | مجموعة التدريب (Training set)| 
+|$$\mathcal V$$| مجموعة التحقق (Validation set) |
+|$$\mathcal G$$| مجموعة الاختبار (Test / Gold set) |
+|$$N$$             | عدد الأمثلة (Number of examples)                                       | 
+|$$K$$             | عدد الفئات أو التسميات (Number of classes or labels)                              |
+|$$\mathbb P(\cdot)$$  | التوزيع الاحتمالي (Probability distribution)                             |
+|$$\mathcal X, \mathcal Y$$    | متغيرات عشوائية (Random variables)                             |
+|$$\mathcal N(\mu, \sigma^2)$$    | التوزيع الطبيعي (Normal distribution) بالمعلمتين $$\mu$$ و $$\sigma^2$$|
+|$$f_{\mathcal X}$$| دالة كثافة الاحتمال (pdf) للمتغير $$\mathcal X$$      |
+|$$\mathbb 1(e)$$     | دالة المؤشر (Indicator function)؛ وتساوي $$1$$ فقط إذا كان $$e$$ صحيحًا          |
+|$$\Omega$$        | فضاء البحث (Search space)                                             |
+|$$\mathbb V$$     | التباين (Variance)                                                 |
+|$$\mathbb E$$     | القيمة المتوقعة (Expectation)                                                 |
 
-#  Requirements
+# المتطلبات (Requirements)
 
-## Python's Libraries
+## مكتبات بايثون (Python's Libraries)
 
 - [NumPy](https://numpy.org)
 - [scikit-learn](https://scikit-learn.org/stable/index.html)
@@ -57,7 +57,7 @@ The goal of the course is to introduce the students to the field of Natural Lang
 - [EvoMSA](https://evomsa.readthedocs.io/en/latest/)
 - [text_models](https://text-models.readthedocs.io/en/latest/)
 
-# Bibliography
+# المراجع والمصادر (Bibliography)
 
 - Speech and Language Processing. An Introduction to Natural Language Processing, Computational Linguistics, and Speech Recognition. Third Edition draft. Daniel Jurafsky and James H. Martin. [pdf](https://web.stanford.edu/~jurafsky/slp3/ed3book_sep212021.pdf)
 - Introduction to machine learning, Third Edition. Ethem Alpaydin. MIT Press

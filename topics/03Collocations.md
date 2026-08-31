@@ -1,19 +1,19 @@
 ---
 layout: default
-title: Collocations
+title: المتلازمات اللفظية
 nav_order: 3
 ---
 
-# Collocations
+# المتلازمات اللفظية
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
 
-## Libraries used
+## المكتبات المستخدمة
 {: .no_toc .text-delta }
 ```python
 from text_models import Vocabulary
@@ -24,7 +24,7 @@ from wordcloud import WordCloud as WC
 from matplotlib import pylab as plt
 ```
 
-## Installing external libraries
+## تثبيت المكتبات الخارجية
 {: .no_toc .text-delta }
 
 ```bash
@@ -35,24 +35,24 @@ pip install text_models
 
 ---
 
-# Introduction
+# المقدمة
 
-A collocation is an expression with the characteristic that its meaning cannot be inferred by simply adding the definition of each of its words, e.g., kick the bucket.
+المتلازمة اللفظية هي تعبير يتميز بأن معناه لا يمكن استنتاجه ببساطة من خلال جمع تعريفات كل كلمة من كلماته، مثل عبارة "kick the bucket" (التي تعني الموت).
 
-As can be expected, finding a collocation is a challenging task; one needs to know the meaning of the words and then realize that the combination of these words produces an utterance that its components cannot explain. However, the approach taken here is more limited; instead of looking for a sentence of any length, we will analyze bigrams and describe algorithms that can retrieve bigrams that could be considered collocations. 
+كما هو متوقع، فإن إيجاد المتلازمات اللفظية مهمة صعبة؛ إذ يحتاج المرء إلى معرفة معنى الكلمات ثم إدراك أن مزج هذه الكلمات ينتج عبارة لا يمكن لمكوناتها تفسيرها. لكن النهج المتبع هنا أكثر تحديدًا؛ فبدلاً من البحث عن جملة بأي طول، سنحلل الثنائيات ونصف خوارزميات يمكنها استرجاع الثنائيات التي قد تُعتبر متلازمات لفظية.
 
-The frequency of the bigrams can be represented in a co-occurrence matrix as the one shown in the following table. 
+يمكن تمثيل تكرار الثنائيات في مصفوفة تواردية كالموضحة في الجدول التالي.
 
 {: #tab:co-occurrence }
 |    | the     | to      | of      | in      | and     | 
-|----|---------|---------|---------|---------|---------|
+|----|---------|---------|---------|---------|---------| 
 |the |       0 |   33390 |   23976 |   29159 |   22768 |
 |to  |   33390 |       0 |   10145 |   18345 |   17816 |
 |of  |   23976 |   10145 |       0 |    6683 |    7802 |
 |in  |   29159 |   18345 |    6683 |       0 |   11536 |
 |and |   22768 |   17816 |    7802 |   11536 |       0 |
 
-The co-occurrence matrix was created using the data obtained from the library [text_models](https://github.com/INGEOTEC/text_models) (see [A Python library for exploratory data analysis on twitter data based on tokens and aggregated origin–destination information](https://www.sciencedirect.com/science/article/pii/S0098300421002946)) using the following code. The third line retrieves all the bigrams and stores them in the variable `bigrams.` The loop goes for all the bigrams that contains one of the five words defined in `index,` it is observed that the matrix is symmetric, this is because the `text_models` library does not store the order of the words composing the bigram.
+تم إنشاء المصفوفة التواردية باستخدام البيانات المستخرجة من مكتبة [text_models](https://github.com/INGEOTEC/text_models) (انظر [A Python library for exploratory data analysis on twitter data based on tokens and aggregated origin–destination information](https://www.sciencedirect.com/science/article/pii/S0098300421002946)) باستخدام الكود التالي. يسترجع السطر الثالث جميع الثنائيات ويخزنها في المتغير `bigrams`. تمر الحلقة على جميع الثنائيات التي تحتوي على إحدى الكلمات الخمس المحددة في `index`، ويُلاحظ أن المصفوفة متماثلة، وذلك لأن مكتبة `text_models` لا تخزن ترتيب الكلمات المكونة للثنائي.
 
 ```python 
 date = dict(year=2022, month=1, day=10)
@@ -68,11 +68,11 @@ for bigram, cnt in bigrams.most_common():
         co_occurrence[index[b], index[a]] = cnt
 ```
 
-The idea is to use the information of the co-occurrence matrix to find the pairs of words that can be considered collocations. The first step is to transform the co-occurrence matrix into a bivariate distribution and then use statistical approaches to retrieve some prominent pairs. Before going into the details of these algorithms, it is pertinent to describe the relationship between words and random variables.
+الفكرة هي استخدام معلومات المصفوفة التواردية للعثور على أزواج الكلمات التي يمكن اعتبارها متلازمات لفظية. الخطوة الأولى هي تحويل المصفوفة التواردية إلى توزيع ثنائي المتغير ثم استخدام المناهج الإحصائية لاسترجاع بعض الأزواج البارزة. قبل الخوض في تفاصيل هذه الخوارزميات، من المناسب وصف العلاقة بين الكلمات والمتغيرات العشوائية.
 
-Each element in the matrix can be uniquely identified by the pair words, e.g., the frequency of pair (_in_, _of_) is $$6683$$. However, it is also possible to identify the same element using an index. For example, if the first word (_the_) is assigned the index $$0$$, the index $$3$$ corresponds to word _in_ and $$2$$ to _of_. Consequently, the element (_in_, _of_) can uniquely identify with the pair (3, 2). One can create a mapping between words and natural numbers such that each different word has a unique identifier. The mapping allows working with natural numbers instead of words which facilitates the analysis and returns to the words (using the inverse mapping) when the result is obtained. 
+يمكن تحديد كل عنصر في المصفوفة بشكل فريد من خلال زوج الكلمات، مثلاً: تكرار الزوج (_in_, _of_) هو $$6683$$. لكن من الممكن أيضًا تحديد نفس العنصر باستخدام فهرس. فإذا أُسند للكلمة الأولى (_the_) الفهرس $$0$$، فإن الفهرس $$3$$ يقابل الكلمة _in_ و $$2$$ يقابل _of_. وبالتالي، يمكن تحديد العنصر (_in_, _of_) بشكل فريد بالزوج (3, 2). يمكن إنشاء ربط بين الكلمات والأعداد الطبيعية بحيث يكون لكل كلمة مختلفة معرّف فريد. يسمح هذا الربط بالعمل مع الأعداد الطبيعية بدلاً من الكلمات مما يسهل التحليل ثم العودة إلى الكلمات (باستخدام الربط العكسي) عند الحصول على النتيجة.
 
-The mapping can be implemented using a dictionary, as seen from the following code where the variable of interest is `index.` 
+يمكن تنفيذ الربط باستخدام قاموس، كما هو موضح في الكود التالي حيث المتغير الرئيسي هو `index`.
 
 ```python
 for bigram, cnt in bigrams.items():
@@ -84,45 +84,45 @@ len(index)
 41419
 ```
 
-It is essential to mention that a random variable is a mapping that assigns a real number to each outcome. In this case, the outcome is observing a word and the mapping is the transformation of the word into the natural number. 
+من المهم ذكر أن المتغير العشوائي هو ربط يُسند عددًا حقيقيًا لكل نتيجة. في هذه الحالة، النتيجة هي ملاحظة كلمة والربط هو تحويل الكلمة إلى عدد طبيعي.
 
-The co-occurrence matrix contains the information of two random variables; each one can have $$d$$ (length of the dictionary) different outcomes. Sometimes, working with two random variables might be challenging, so a more suitable approach is starting the description with the most simple case, which corresponds to a single random variable with only two outcomes. 
+تحتوي المصفوفة التواردية على معلومات متغيرين عشوائيين؛ كل منهما يمكن أن يكون له $$d$$ (طول القاموس) نتيجة مختلفة. أحيانًا، قد يكون العمل مع متغيرين عشوائيين صعبًا، لذلك فإن النهج الأنسب هو البدء بالوصف في أبسط حالة، وهي متغير عشوائي واحد بنتيجتين فقط.
 
-# Bernoulli Distribution
+# توزيع برنولي
 {: #sec:bernoulli }
 
-Let $$\mathcal{X}$$ be a random variable with two outcomes ($$\{1, 0\}$$), e.g., this variable corresponds to a language that only has two words. At this point, one might realize that different experiments can be represented with a random variable of two outcomes; perhaps the most famous one is tossing a coin.
+ليكن $$\mathcal{X}$$ متغيرًا عشوائيًا بنتيجتين ($$\{1, 0\}$$)، أي أن هذا المتغير يقابل لغة لا تحتوي إلا على كلمتين. في هذه المرحلة، قد يدرك المرء أن تجارب مختلفة يمكن تمثيلها بمتغير عشوائي ذي نتيجتين؛ ولعل أشهرها رمي العملة.
 
-The random variable $$\mathcal{X}$$ has a Bernoulli distribution, i.e., $$\mathcal X \sim \textsf{Bernoulli}(p)$$, in the case that $$\mathbb P(\mathcal X=1)=p$$ and $$\mathbb P(\mathcal X=0)=1 - p$$ for $$p \in [0, 1]$$, where the probability (mass) function is $$f_{\mathcal X}(x) = p^x(1-p)^{1-x}.$$
+المتغير العشوائي $$\mathcal{X}$$ له توزيع برنولي، أي $$\mathcal X \sim \textsf{Bernoulli}(p)$$، في حالة أن $$\mathbb P(\mathcal X=1)=p$$ و $$\mathbb P(\mathcal X=0)=1 - p$$ حيث $$p \in [0, 1]$$، ودالة الكتلة الاحتمالية هي $$f_{\mathcal X}(x) = p^x(1-p)^{1-x}.$$
 
-For example, the language under study has two words _good_ and _bad_, and we encountered a sequence "good bad bad good good." Using the following mapping 
+على سبيل المثال، اللغة قيد الدراسة تحتوي على كلمتين _good_ و _bad_، وصادفنا التسلسل "good bad bad good good." باستخدام الربط التالي:
 
 $$\mathcal X(w) = \begin{cases}
 1 \text{ when } w \text{ is good}\\
 0 \text{ when } w \text{ is bad}
 \end{cases}.$$
 
-The sequence is represented as $$(1, 0, 0, 1, 1)$$ and in general a sequence of five elements is $$(\mathcal X_1, \mathcal X_2, \mathcal X_3, \mathcal X_4, \mathcal X_5);$$ as expected a sequence of $$N$$ observations is $$(\mathcal X_1, \mathcal X_2, \ldots, \mathcal X_N)$$. Different studies can be applied to a sequence; however, at this point we would like to impose some constraints on the way it was obtained. The first constraint is to assume that $$\mathcal X_i \sim \textsf{Bernoulli}(p),$$ then one is interested in estimating the value of the parameter $$p$$. The second assumption is that the random variables are indepedent, that is, the outcome of the variable $$\mathcal X_i$$ is independent of $$\mathcal X_j$$ for $$j \neq i.$$
+يُمثَّل التسلسل كـ $$(1, 0, 0, 1, 1)$$ وبشكل عام تسلسل من خمسة عناصر هو $$(\mathcal X_1, \mathcal X_2, \mathcal X_3, \mathcal X_4, \mathcal X_5)$$؛ وكما هو متوقع تسلسل من $$N$$ ملاحظة هو $$(\mathcal X_1, \mathcal X_2, \ldots, \mathcal X_N)$$. يمكن تطبيق دراسات مختلفة على التسلسل؛ لكن في هذه المرحلة نريد فرض بعض القيود على طريقة الحصول عليه. القيد الأول هو افتراض أن $$\mathcal X_i \sim \textsf{Bernoulli}(p)$$، ثم نهتم بتقدير قيمة المعلمة $$p$$. الافتراض الثاني هو أن المتغيرات العشوائية مستقلة، أي أن نتيجة المتغير $$\mathcal X_i$$ مستقلة عن $$\mathcal X_j$$ حيث $$j \neq i$$.
 
-There is an important characteristic for independent random variables, i.e., $$(\mathcal X_1, \mathcal X_2, \ldots, \mathcal X_N)$$ which is 
+هناك خاصية مهمة للمتغيرات العشوائية المستقلة، أي $$(\mathcal X_1, \mathcal X_2, \ldots, \mathcal X_N)$$ وهي:
 
 $$\mathbb P(\mathcal X_1, \mathcal X_2, \ldots, \mathcal X_N) = \prod_{i=1}^N \mathbb P(\mathcal X_i).$$
 
-Returning to the example "good bad bad good good," the independent assumption means that observing _bad_ as the second word is not influenced by getting _good_ as the first word. 
+بالعودة إلى مثال "good bad bad good good"، يعني افتراض الاستقلالية أن ملاحظة _bad_ ككلمة ثانية لا تتأثر بالحصول على _good_ ككلمة أولى.
 
-## Maximum Likelihood Method
+## طريقة الترجيح الأقصى
 
-A natural example of independent random variables is the tossing of a coin. For example, observing the sequence $$(1, 0, 0, 1, 1)$$ and knowing that these come from tossing a coin five times, then our intuition indicates that the estimated parameter $$p$$ correspond to the fraction between the number of ones (3) and the number of tosses (5). 
+مثال طبيعي على المتغيرات العشوائية المستقلة هو رمي العملة. مثلاً عند ملاحظة التسلسل $$(1, 0, 0, 1, 1)$$ ومعرفة أنه ناتج عن رمي عملة خمس مرات، فإن حدسنا يشير إلى أن المعلمة المقدرة $$p$$ تتوافق مع النسبة بين عدد الآحاد (3) وعدد الرميات (5).
 
-A natural example of independent random variables is the tossing of a coin. For example, observing the sequence $$(1, 0, 0, 1, 1)$$ and knowing that these come from tossing a coin five times, then our intuition indicates that the estimated parameter $$p$$ correspond to the fraction between the number of ones (3) and the number of tosses (5). In this case, our intuition corresponds to the maximum likelihood method defined as follows:
+في هذه الحالة، يتوافق حدسنا مع طريقة الترجيح الأقصى المعرفة كالتالي:
 
 $$\mathcal L_{f_{\mathcal X}}(\theta) = \prod_{i=1}^N f_{\mathcal X}(x_i \mid \theta),$$
 
-where $$f_{\mathcal X}$$ corresponds to the probability density function, in the case discrete random variable corresponds to $$\mathbb P(X=x) = f_{\mathcal X}(x),$$ and the notation $$f_{\mathcal X}(x_i \mid \theta)$$ indicates that $$f$$ depends on a set of parameters refered as $$\theta$$.
+حيث $$f_{\mathcal X}$$ تقابل دالة الكثافة الاحتمالية، وفي حالة المتغير العشوائي المنفصل تقابل $$\mathbb P(X=x) = f_{\mathcal X}(x)$$، والترميز $$f_{\mathcal X}(x_i \mid \theta)$$ يشير إلى أن $$f$$ تعتمد على مجموعة معلمات يُشار إليها بـ $$\theta$$.
 
-The maximum likelihood estimator $$\hat \theta$$ corresponds to maximizing $$\mathcal L_{f_{\mathcal X}}(\theta)$$ or equivalent maximizing $$l_{f_\mathcal X}(\theta) =  \log \mathcal L_{f_{\mathcal X}}(\theta).$$ 
+مقدر الترجيح الأقصى $$\hat \theta$$ يتوافق مع تعظيم $$\mathcal L_{f_{\mathcal X}}(\theta)$$ أو ما يعادل تعظيم $$l_{f_\mathcal X}(\theta) = \log \mathcal L_{f_{\mathcal X}}(\theta)$$.
 
-Continuing with the example $$(1, 0, 0, 1, 1)$$, given that $$\mathcal X_i$$ is Bernoulli distributed then $$f_{\mathcal X}(x) = p^x(1-p)^{1-x}$$. The maximum likelihood estimator of $$p$$ is obtained by maximizing the likelihood function, which can be solved analytically by following the next steps.
+بالاستمرار مع المثال $$(1, 0, 0, 1, 1)$$، بما أن $$\mathcal X_i$$ يتبع توزيع برنولي فإن $$f_{\mathcal X}(x) = p^x(1-p)^{1-x}$$. يتم الحصول على مقدر الترجيح الأقصى لـ $$p$$ بتعظيم دالة الترجيح، والتي يمكن حلها تحليليًا باتباع الخطوات التالية:
 
 $$\begin{eqnarray} 
 \frac{d}{dp} \mathcal l_{f_{\mathcal X}}(p) &=& 0 \\ 
@@ -132,47 +132,47 @@ $$\begin{eqnarray}
 \sum_{i=1}^N x_i \frac{1}{p} + (N - \sum_{i=1}^N x_i) \frac{-1}{(1 - p)} &=& 0 \\
 \end{eqnarray},$$
 
-solving for $$p$$ it is obtained $$\hat p = \frac{1}{N}\sum_{i=1}^N x_i.$$
+بحل المعادلة للحصول على $$p$$ نحصل على $$\hat p = \frac{1}{N}\sum_{i=1}^N x_i$$.
 
-For example, the following code creates an array of 100 elements where each element is the outcome of a Bernoulli distributed random variable. The second line estimates the parameter $$p$$. 
+على سبيل المثال، ينشئ الكود التالي مصفوفة من 100 عنصر حيث كل عنصر هو نتيجة متغير عشوائي يتبع توزيع برنولي. السطر الثاني يقدر المعلمة $$p$$.
 
 ```python
 x = np.random.binomial(1, 0.3, size=100)
 hp = x.mean()
 ```
 
-# Categorical distribution
+# التوزيع الفئوي
 {: #sec:categorical }
 
-Having a language with only two words seems useless; it sounds more realistic to have a language with $$d$$ words. Let $$\mathcal X$$ be a random variable with $$d$$ outcomes ($$\{1, 2, \ldots, d\}$$). The random variable $$\mathcal X$$ has a Categorical distribution, i.e., $$\mathcal X \sim \textsf{Categorical}(\mathbf p)$$ in the case $$\mathbb P(\mathcal X=i) = \mathbf p_i $$ for $$1 \leq i \leq d$$, where $$\sum_i^d \mathbf p_i =1$$ and $$\mathbf p \in \mathbb R^d$$. The probability mass function of a Categorical distribution is $$f_{\mathcal X}(x) = \prod_{i=1}^d \mathbf p_i^{\mathbb 1(i=x)}$$.
+وجود لغة بكلمتين فقط يبدو غير مفيد؛ يبدو أكثر واقعية أن تحتوي اللغة على $$d$$ كلمة. ليكن $$\mathcal X$$ متغيرًا عشوائيًا بـ $$d$$ نتيجة ($$\{1, 2, \ldots, d\}$$). المتغير العشوائي $$\mathcal X$$ له توزيع فئوي، أي $$\mathcal X \sim \textsf{Categorical}(\mathbf p)$$ في حالة $$\mathbb P(\mathcal X=i) = \mathbf p_i$$ حيث $$1 \leq i \leq d$$، وحيث $$\sum_i^d \mathbf p_i =1$$ و $$\mathbf p \in \mathbb R^d$$. دالة الكتلة الاحتمالية للتوزيع الفئوي هي $$f_{\mathcal X}(x) = \prod_{i=1}^d \mathbf p_i^{\mathbb 1(i=x)}$$.
 
-The estimated parameter is $$\hat{\mathbf p}_i = \frac{1}{N}\sum_{j=1}^N \mathbb 1(x_j = i).$$
+المعلمة المقدرة هي $$\hat{\mathbf p}_i = \frac{1}{N}\sum_{j=1}^N \mathbb 1(x_j = i)$$.
 
-## Maximum Likelihood Estimator
+## مقدر الترجيح الأقصى
 
-The maximum likelihood estimator can be obtained by maximizing the log-likelihood, i.e., 
+يمكن الحصول على مقدر الترجيح الأقصى بتعظيم اللوغاريتم الطبيعي للترجيح، أي:
 
 $$l_{f_\mathcal X}(\mathbf p) = \log \prod_{i=1}^N \prod_{k=1}^d \mathbf p_k^{\mathbb 1(x_i=k)},$$ 
 
-subject to the constraint $$\sum_i^d \mathbf p_i=1$$. 
+بخضوعه للقيد $$\sum_i^d \mathbf p_i=1$$.
 
-An optimization problem with a equality constraint can be solved using Langrage multipliers which requieres setting the constraint in the original formulation and making a derivative on a introduce variable $$\lambda$$. Using Langrage multiplier the system of equations that need to be solved is the following: 
+يمكن حل مسألة التحسين ذات قيد المساواة باستخدام مضاعفات لاغرانج التي تتطلب وضع القيد في الصياغة الأصلية وإجراء اشتقاق على متغير مُدخل $$\lambda$$. باستخدام مضاعف لاغرانج، تكون مجموعة المعادلات التي يجب حلها كالتالي:
 
 $$\begin{eqnarray}
 \frac{\partial}{\partial \mathbf p_j} [\log \prod_{i=1}^N \prod_{k=1}^d \mathbf p_k^{\mathbb 1(x_i=k)} - \lambda (\sum_i^d \mathbf p_i -1)] &=& 0 \\
 \frac{\partial}{\partial \lambda} [\log \prod_{i=1}^N \prod_{k=1}^d \mathbf p_k^{\mathbb 1(x_i=k)} - \lambda (\sum_i^d \mathbf p_i -1)] &=& 0 \\
 \end{eqnarray},$$
 
-where the term $$\lambda (\sum_i^d \mathbf p_i -1)$$ corresponds to the equality constraint.
+حيث الحد $$\lambda (\sum_i^d \mathbf p_i -1)$$ يقابل قيد المساواة.
 
-For example, one of the most known processes that involve a Categorical distribution is rolling a dice. The following is a procedure to simulate dice rolling using a Multinomial distribution. 
+على سبيل المثال، إحدى أشهر العمليات التي تتضمن التوزيع الفئوي هي رمي حجر النرد. التالي هو إجراء لمحاكاة رمي النرد باستخدام التوزيع متعدد الحدود.
 
 ```python
 X = np.random.multinomial(1, [1/6] * 6, size=100)
 x = X.argmax(axis=1)
 ```
 
-On the other hand, the maximum likelihood estimator can be implemented as follows:
+من ناحية أخرى، يمكن تنفيذ مقدر الترجيح الأقصى كالتالي:
 
 ```python
 var, counts = np.unique(x, return_counts=True)
@@ -180,14 +180,14 @@ N = counts.sum()
 p = counts / N
 ```
 
-# Bivariate distribution
+# التوزيع ثنائي المتغير
 {: #sec:bivariate-distribution }
 
-We have all the elements to realize that the co-occurrence matrix is the realization of two random variables (each one can have $$d$$ outcomes); it keeps track of the number of times a bigram appear in a corpus. So far, we have not worked with two random variables; however, the good news is that the co-occurrence matrix contains all the information needed to define a bivariate distribution for this process.
+لدينا جميع العناصر لندرك أن المصفوفة التواردية هي تحقيق لمتغيرين عشوائيين (كل منهما يمكن أن يكون له $$d$$ نتيجة)؛ فهي تتتبع عدد مرات ظهور الثنائي في المتن. حتى الآن، لم نعمل مع متغيرين عشوائيين؛ لكن الخبر السار هو أن المصفوفة التواردية تحتوي على جميع المعلومات اللازمة لتعريف توزيع ثنائي المتغير لهذه العملية.
 
-The first step is to define a new random variable $$\mathcal X_i$$ that represents the event of getting a bigram. $$\mathcal X_i$$ is defined using $$\mathcal X_r$$ and $$\mathcal X_r$$  which correspond to the random variables of the first and second word of the bigram. For the case, $$\mathcal X_r=r$$ and $$\mathcal X_c=c$$ the random variable is defined as $$\mathcal X_i= (r + 1) \cdot (c + 1)$$, where the constant one is needed in case zero is included as one of the outcomes of the random variables $$\mathcal X_r$$ and $$\mathcal X_c$$. For example, in the co-occurrence matrix, presented previously, the realization $$\mathcal X_r=3$$ and $$\mathcal X_c=2$$ corresponds to the bigram (_in_, _of_) which has a recorded frequency of $$6683$$, using the new variable the event is $$\mathcal X_i=12$$. As can be seen, $$X_i$$ is a random variable with $$d^2$$ outcomes. We can suppose $$\mathcal X_i$$ is a Categorical distributed random variable, i.e., $$\mathcal X_i \sim \textsf{Categorical}(\mathbf p).$$
+الخطوة الأولى هي تعريف متغير عشوائي جديد $$\mathcal X_i$$ يمثل حدث الحصول على ثنائي. يُعرَّف $$\mathcal X_i$$ باستخدام $$\mathcal X_r$$ و $$\mathcal X_c$$ اللذين يقابلان المتغيرين العشوائيين للكلمة الأولى والثانية من الثنائي. في حالة $$\mathcal X_r=r$$ و $$\mathcal X_c=c$$ يُعرَّف المتغير كـ $$\mathcal X_i= (r + 1) \cdot (c + 1)$$، حيث الثابت واحد مطلوب في حال كان الصفر مشمولاً كإحدى نتائج المتغيرين $$\mathcal X_r$$ و $$\mathcal X_c$$. مثلاً في المصفوفة التواردية المعروضة سابقًا، التحقيق $$\mathcal X_r=3$$ و $$\mathcal X_c=2$$ يقابل الثنائي (_in_, _of_) الذي تكراره المسجل هو $$6683$$، وباستخدام المتغير الجديد يكون الحدث $$\mathcal X_i=12$$. كما يتضح، $$X_i$$ هو متغير عشوائي بـ $$d^2$$ نتيجة. يمكننا افتراض أن $$\mathcal X_i$$ يتبع توزيعًا فئويًا، أي $$\mathcal X_i \sim \textsf{Categorical}(\mathbf p)$$.
 
-The fact that $$\mathcal X_i$$ would be considered Categorical distributed implies that the bigrams are independent that is observing one of them is not affected by the previous words in any way. However, with this assumption it is straightforward estimating the parameter $$\mathbf p$$ which is $$\hat{\mathbf p}_i = \frac{1}{N}\sum_{j=1}^N \mathbb 1(x_j = i).$$. Consequently, the co-occurrence matrix can be converted into a bivariate distribution by dividing it by $$N$$, where $$N$$ is the sum of all the values of the co-occurrence matrix. For example, the following code builds the bivariate distribution from the co-occurrence matrix.
+كون $$\mathcal X_i$$ يُعتبر ذا توزيع فئوي يعني أن الثنائيات مستقلة، أي أن ملاحظة أحدها لا تتأثر بالكلمات السابقة بأي شكل. لكن مع هذا الافتراض يصبح تقدير المعلمة $$\mathbf p$$ مباشرًا وهو $$\hat{\mathbf p}_i = \frac{1}{N}\sum_{j=1}^N \mathbb 1(x_j = i)$$. وبالتالي، يمكن تحويل المصفوفة التواردية إلى توزيع ثنائي المتغير بقسمتها على $$N$$، حيث $$N$$ هو مجموع جميع قيم المصفوفة التواردية. الكود التالي يبني التوزيع ثنائي المتغير من المصفوفة التواردية:
 
 ```python
 co_occurrence = np.zeros((len(index), len(index)))
@@ -199,7 +199,7 @@ for bigram, cnt in bigrams.most_common():
 co_occurrence = co_occurrence / co_occurrence.sum()
 ```
 
-The following table presents an extract of the bivariate distribution. 
+يعرض الجدول التالي مقتطفًا من التوزيع ثنائي المتغير.
 
 {: #tab:bivariate-distribution }
 |    | the      | to       | of       | in       | and      | 
@@ -210,24 +210,24 @@ The following table presents an extract of the bivariate distribution.
 |in  |  0.00144 |  0.00090 |  0.00033 |  0.00000 |  0.00057 |
 |and |  0.00112 |  0.00088 |  0.00038 |  0.00057 |  0.00000 |
 
-Once the information of the bigrams has been transformed into a bivariate distribution, we can start analyzing it. As mentioned previously, the idea is to identify those bigrams that can be considered collocations. However, the frequency of the bigrams does not contain semantic information of the words or the phrase at hand, which can be used to identify a collocation precisely. Nonetheless, a collocation is a phrase where its components do not appear by chance; that is, the elements composing it are not drawn independently from a distribution. Therefore, the bivariate distribution can be used to identify those words that are not independent, which is a hard constraint for being considered a collocation. 
+بمجرد تحويل معلومات الثنائيات إلى توزيع ثنائي المتغير، يمكننا البدء في تحليله. كما ذُكر سابقًا، الفكرة هي تحديد تلك الثنائيات التي يمكن اعتبارها متلازمات لفظية. لكن تكرار الثنائيات لا يحتوي على معلومات دلالية عن الكلمات أو العبارة المعنية، والتي يمكن استخدامها لتحديد المتلازمة اللفظية بدقة. ومع ذلك، فإن المتلازمة اللفظية هي عبارة لا تظهر مكوناتها بالصدفة؛ أي أن العناصر المكونة لها لا تُسحب بشكل مستقل من توزيع. لذلك، يمكن استخدام التوزيع ثنائي المتغير لتحديد تلك الكلمات غير المستقلة، وهو قيد صارم لاعتبارها متلازمة لفظية.
 
-## Independence and Marginal Distribution
+## الاستقلالية والتوزيع الهامشي
 {: #sec:independence-marginal}
 
-The bivariate distribution shown in the previous table contains the probability of obtaining a bigram, i.e., $$\mathbb P(\mathcal X_r=r, \mathcal X_c=c)$$; this information is helpful when combined with the concept of independence and marginal distribution.
+يحتوي التوزيع ثنائي المتغير الموضح في الجدول السابق على احتمال الحصول على ثنائي، أي $$\mathbb P(\mathcal X_r=r, \mathcal X_c=c)$$؛ هذه المعلومات مفيدة عند دمجها مع مفهوم الاستقلالية والتوزيع الهامشي.
 
-Two random variables $$\mathcal X$$ and $$\mathcal Y$$ are **independent** if
+متغيران عشوائيان $$\mathcal X$$ و $$\mathcal Y$$ **مستقلان** إذا:
 $$\mathbb P(\mathcal X, \mathcal Y)=\mathbb P(\mathcal X) \mathbb P(\mathcal Y).$$ 
 
-The definition of independence is useless if $$\mathbb P(\mathcal X)$$ and $$\mathbb P(\mathcal Y)$$ are unknown. Fortunately, the **marginal distribution** definition describes the procedure to obtain $$\mathbb P(\mathcal X=x)$$ and $$\mathbb P(\mathcal Y=y)$$ from the bivariate distribution. Let $$f_{\mathcal X, \mathcal Y}$$ be the joint distribution mass function (i.e., $$f_{\mathcal X, \mathcal Y}(x, y)=\mathbb P(\mathcal X=x, \mathcal Y=y)$$) then the marginal mass function for $$\mathcal X$$ is 
+تعريف الاستقلالية غير مفيد إذا كان $$\mathbb P(\mathcal X)$$ و $$\mathbb P(\mathcal Y)$$ مجهولين. لحسن الحظ، يصف تعريف **التوزيع الهامشي** الإجراء للحصول على $$\mathbb P(\mathcal X=x)$$ و $$\mathbb P(\mathcal Y=y)$$ من التوزيع ثنائي المتغير. ليكن $$f_{\mathcal X, \mathcal Y}$$ دالة الكتلة الاحتمالية المشتركة (أي $$f_{\mathcal X, \mathcal Y}(x, y)=\mathbb P(\mathcal X=x, \mathcal Y=y)$$) فإن دالة الكتلة الهامشية لـ $$\mathcal X$$ هي:
 
 $$f_{\mathcal X}(x) = \mathbb P(\mathcal X=x) = \sum_y \mathbb P(\mathcal X=x, \mathcal Y=y) = \sum_y f_{\mathcal X, \mathcal Y}(x, y).$$
 
-## Example of rolling two dices
+## مثال رمي نردين
 {: #sec:rolling-two-dices}
 
-The interaction of these concepts can be better understood with a simple example in where all details are known. The following code simulated the rolling of two dices. Variables `R` and `C` contain the rolling of the two dices, and the variable `Z` has the outcome of the pair. 
+يمكن فهم تفاعل هذه المفاهيم بشكل أفضل من خلال مثال بسيط حيث جميع التفاصيل معروفة. يحاكي الكود التالي رمي نردين. المتغيران `R` و `C` يحتويان على نتائج رمي النردين، والمتغير `Z` يحتوي على نتيجة الزوج.
 
 ```python
 d = 6
@@ -236,7 +236,7 @@ C = np.random.multinomial(1, [1/d] * d, size=10000).argmax(axis=1)
 Z = [[r, c] for r, c in zip(R, C)]
 ```
 
-`Z` is transformed first into a frequency matrix (variable `W`), equivalent to a co-occurrence matrix, and then, it is converted into a bivariate distribution (last line).
+يُحوَّل `Z` أولاً إلى مصفوفة تكرارات (المتغير `W`)، وهو ما يعادل المصفوفة التواردية، ثم يُحوَّل إلى توزيع ثنائي المتغير (السطر الأخير).
 
 ```python
 W = np.zeros((d, d))
@@ -245,7 +245,7 @@ for r, c in Z:
 W = W / W.sum()
 ```
 
-The next matrix presents the bivariate distribution `W`
+المصفوفة التالية تعرض التوزيع ثنائي المتغير `W`:
 
 $$
 W=\mathbb P(\mathcal X_r, \mathcal X_c) = 
@@ -258,21 +258,20 @@ W=\mathbb P(\mathcal X_r, \mathcal X_c) =
 0.0284 & 0.0287 & 0.0273 & 0.0290 & 0.0275 & 0.0286 \\
 \end{pmatrix}.$$
 
-The next step is to compute the marginal instributions $$\mathbb P(\mathcal X_r)$$ and $$\mathbb P(\mathcal X_c)$$ which can be done as follows
+الخطوة التالية هي حساب التوزيعات الهامشية $$\mathbb P(\mathcal X_r)$$ و $$\mathbb P(\mathcal X_c)$$ والتي يمكن حسابها كالتالي:
 
 ```python
 R_m = W.sum(axis=1)
 C_m = W.sum(axis=0)
 ```
 
-The marginal distribution and the definition of independence are used to obtain $$\mathbb P(\mathcal X_r) \mathbb P(\mathcal X_c)$$ which can be computed using the dot product, consequenly `R` and `C` need to be transform into a two dimensional
-array using `np.atleast_2d` function. 
+يُستخدم التوزيع الهامشي وتعريف الاستقلالية للحصول على $$\mathbb P(\mathcal X_r) \mathbb P(\mathcal X_c)$$ والذي يمكن حسابه باستخدام الجداء النقطي، وبالتالي يجب تحويل `R` و `C` إلى مصفوفة ثنائية الأبعاد باستخدام دالة `np.atleast_2d`.
 
 ```python
 ind = np.dot(np.atleast_2d(R_m).T, np.atleast_2d(C_m))
 ```
 
-`W` contains the estimated bivariate distribution, and `ind` could be the bivariate distribution only if $$\mathcal X_r$$ and $$\mathcal X_c$$ are independent. The following matrix shows `W-ind`, which would be a zero matrix if the variables are independent. 
+`W` يحتوي على التوزيع ثنائي المتغير المقدَّر، و `ind` يمكن أن يكون التوزيع ثنائي المتغير فقط إذا كان $$\mathcal X_r$$ و $$\mathcal X_c$$ مستقلين. المصفوفة التالية تعرض `W-ind`، والتي ستكون مصفوفة صفرية إذا كانت المتغيرات مستقلة.
 
 $$\mathbb P(\mathcal X_r, \mathcal X_c) - \mathbb P(\mathcal X_r)\mathbb P(\mathcal X_c) = 
 \begin{pmatrix}
@@ -285,13 +284,13 @@ $$\mathbb P(\mathcal X_r, \mathcal X_c) - \mathbb P(\mathcal X_r)\mathbb P(\math
 \end{pmatrix}
 $$
 
-It is observed from the matrix that all its elements are close to zero ($$\mid W_{ij}\mid \leq 0.009$$), which is expected given that by construction, the two variables are independent. On the other hand, a simulation where the variables are not independent would produce a matrix where its components are different from zero. Such an example can be quickly be done by changing variable `Z.` The following code simulates the case where the two dices cannot have the same value: the events $$(1, 1), (2, 2), \ldots,$$ are unfeasible. It is hard to imagine how this experiment can be done with two physical dice; however, simulating it is only a condition, as seen in the following code.   
+يُلاحظ من المصفوفة أن جميع عناصرها قريبة من الصفر ($$\mid W_{ij}\mid \leq 0.009$$)، وهو ما هو متوقع بالنظر إلى أن المتغيرين بالتصميم مستقلان. من ناحية أخرى، محاكاة حيث المتغيرات غير مستقلة ستنتج مصفوفة عناصرها مختلفة عن الصفر. يمكن عمل مثل هذا المثال بسرعة بتغيير المتغير `Z`. يحاكي الكود التالي الحالة التي لا يمكن فيها للنردين أن يحملا نفس القيمة: الأحداث $$(1, 1), (2, 2), \ldots,$$ غير ممكنة.
 
 ```python
 Z = [[r, c] for r, c in zip(R, C) if r != c]
 ```
 
-The difference between the estimated bivariate distribution and the product of the marginal distributions is presented in the following matrix. It can be observed that the values in the diagonal are negative because $$\mathbb P(\mathcal X_r=x, \mathcal X_c=x)=0$$ these events are not possible in this experiment. Additionally, the values of the diagonal are higher than $$\mid W_{ii} \mid > 0.09.$$
+الفرق بين التوزيع ثنائي المتغير المقدَّر وجداء التوزيعات الهامشية معروض في المصفوفة التالية. يمكن ملاحظة أن القيم في القطر سالبة لأن $$\mathbb P(\mathcal X_r=x, \mathcal X_c=x)=0$$ فهذه الأحداث غير ممكنة في هذه التجربة. بالإضافة إلى ذلك، قيم القطر أعلى من $$\mid W_{ii} \mid > 0.09$$.
 
 $$ 
 \begin{pmatrix}
@@ -304,13 +303,13 @@ $$
 \end{pmatrix}
 $$
 
-The last example creates a dependency between $$\mathcal X_r=2$$ and $$\mathcal X_c=1$$; this dependency is encoded in the following code, it relies on a parameter set to $$0.1.$$
+المثال الأخير ينشئ تبعية بين $$\mathcal X_r=2$$ و $$\mathcal X_c=1$$؛ هذه التبعية مشفرة في الكود التالي، وتعتمد على معلمة مضبوطة على $$0.1$$.
 
 ```python
 Z = [[2 if c == 1 and np.random.rand() < 0.1 else r, c] for r, c in zip(R, C)]
 ```
 
-The following matrix presents the difference between the measured bivariate distribution and the one obtained assuming independence. It can be observed that there is only one element higher than $$0.009$$, which corresponds to the pair where the variables are dependent.
+المصفوفة التالية تعرض الفرق بين التوزيع ثنائي المتغير المقاس والمحصل عليه بافتراض الاستقلالية. يمكن ملاحظة أن هناك عنصرًا واحدًا فقط أعلى من $$0.009$$، والذي يقابل الزوج الذي يكون فيه المتغيران تابعين.
 
 $$
 \begin{pmatrix}
@@ -323,19 +322,19 @@ $$
 \end{pmatrix}
 $$
 
-## Example of the bigrams
+## مثال الثنائيات
 {: #sec:bigrams }
 
-The example of rolling two dices illustrates the dependency behavior in two random variables. It showed that the difference between the bivariate distribution and the dot product of the marginals could be used to infer independence. There was an interesting case where the difference matrix has a negative diagonal, implying dependency; however, the dependency was because the pair was unfeasible. 
+يوضح مثال رمي النردين سلوك التبعية في متغيرين عشوائيين. وقد أظهر أن الفرق بين التوزيع ثنائي المتغير والجداء النقطي للتوزيعات الهامشية يمكن استخدامه لاستنتاج الاستقلالية. كانت هناك حالة مثيرة حيث كان لمصفوفة الفرق قطر سالب، مما يدل على التبعية؛ لكن التبعية كانت بسبب أن الزوج غير ممكن.
 
-We can use an equivalent procedure with the bivariate distribution of the [bigrams](#tab:bivariate-distribution). The idea is to compute the difference between the bivariate distribution and the product of the marginals. The aim is that this difference can highlight bigrams that could be considered collocations. 
+يمكننا استخدام إجراء مكافئ مع التوزيع ثنائي المتغير [للثنائيات](#tab:bivariate-distribution). الفكرة هي حساب الفرق بين التوزيع ثنائي المتغير وجداء التوزيعات الهامشية. الهدف هو أن هذا الفرق يمكن أن يبرز الثنائيات التي يمكن اعتبارها متلازمات لفظية.
 
-It is impossible to show the bivariate distribution using a matrix, so we rely on a word cloud to depict those bigrams with a higher probability. The following figure presents the word cloud of the bivariate distribution. 
+من المستحيل عرض التوزيع ثنائي المتغير باستخدام مصفوفة، لذلك نعتمد على سحابة الكلمات لتصوير تلك الثنائيات ذات الاحتمال الأعلى. الشكل التالي يعرض سحابة كلمات التوزيع ثنائي المتغير.
 
-![Wordcloud](/NLP-Course/assets/images/wordcloud_us.png)
+![سحابة كلمات](/NLP-Course-Ar/assets/images/wordcloud_us.png)
 <details markdown="block">
   <summary>
-    Code of the bigrams word cloud
+    كود سحابة كلمات الثنائيات
   </summary>
 
 ```python
@@ -348,13 +347,13 @@ plt.tight_layout()
 ```
 </details>
 
-The bivariate matrix is symmetric; therefore, the marginal $$f_{\mathcal X_r}=f_{\mathcal X_c}$$ which can be stored in an array (variable `M`) as follows:
+المصفوفة ثنائية المتغير متماثلة؛ وبالتالي التوزيع الهامشي $$f_{\mathcal X_r}=f_{\mathcal X_c}$$ والذي يمكن تخزينه في مصفوفة (المتغير `M`) كالتالي:
 
 ```python
 M = co_occurrence.sum(axis=1)
 ```
 
-It can be observed that most of the elements of the bivariate matrix are zero, so instead of using computing the difference between the bivariate distribution and the product of the marginals, it is more efficient to compute only for the pairs that appear in the co-occurrence matrix. The difference can be computed using the following function.
+يمكن ملاحظة أن معظم عناصر المصفوفة ثنائية المتغير هي صفر، لذلك بدلاً من حساب الفرق بين التوزيع ثنائي المتغير وجداء التوزيعات الهامشية، من الأكفأ حسابه فقط للأزواج الموجودة في المصفوفة التواردية. يمكن حساب الفرق باستخدام الدالة التالية:
 
 ```python
 def get_diff(key):
@@ -364,7 +363,7 @@ def get_diff(key):
     return co_occurrence[a, b] - M[a] * M[b]
 ```
 
-The following table presents the difference matrix for the first five words. It is seen that the diagonal is negative because, by construction, there are no bigrams of the same word. Outside the diagonal, we can see other negative numbers; it seems that these numbers are closed to zero, indicating that these values could be independent. 
+يعرض الجدول التالي مصفوفة الفرق لأول خمس كلمات. يُلاحظ أن القطر سالب لأنه بالتصميم لا توجد ثنائيات لنفس الكلمة. خارج القطر، يمكن رؤية أرقام سالبة أخرى؛ يبدو أن هذه الأرقام قريبة من الصفر، مما يشير إلى أن هذه القيم قد تكون مستقلة.
 
 |     | the      | to       | of       | in       | and      | 
 |-----|----------|----------|----------|----------|----------|
@@ -375,7 +374,7 @@ The following table presents the difference matrix for the first five words. It 
 |and  | -0.00024 | -0.00017 | -0.00007 | -0.00013 | -0.00065 |
 
 
-The word cloud of the difference can be computed using the following code. Those bigrams that have a negative value were discarded because these cannot be considered collocations because the statistic tells that the words do not appear together. 
+يمكن حساب سحابة كلمات الفرق باستخدام الكود التالي. تم استبعاد الثنائيات ذات القيمة السالبة لأنها لا يمكن اعتبارها متلازمات لفظية لأن الإحصاء يخبرنا أن الكلمات لا تظهر معًا.
 
 ```python
 freq = {x: get_diff(x) for x in bigrams.keys()}
@@ -386,33 +385,33 @@ plt.imshow(wc)
 plt.axis('off')
 ```
 
-The following figure presents the word cloud of the difference. It can be observed that the main difference between the important bigrams of the former figure and this one is that the former presented mostly stopwords, and this one has other words. 
+يعرض الشكل التالي سحابة كلمات الفرق. يمكن ملاحظة أن الفرق الرئيسي بين الثنائيات المهمة في الشكل السابق وهذا هو أن الشكل السابق عرض في الغالب كلمات وظيفية بينما هذا يحتوي على كلمات أخرى.
 
 {: #fig:wordcloud-differences}
-![Wordcloud](/NLP-Course/assets/images/wordcloud_us2.png)
+![سحابة كلمات](/NLP-Course-Ar/assets/images/wordcloud_us2.png)
 
-# Hypothesis Testing
+# اختبار الفرضيات
 
-We have been using the difference between $$\mathbb P(\mathcal X, \mathcal Y) - \mathbb P(\mathcal X) \mathbb P(\mathcal Y)$$ to measure whether the variables are dependent or independent. For the case of rolling dices, we saw that when the variables are independent, all the absolute value of the difference is lower than $$0.009$$; however, this is by no means a formal definition.  
+لقد كنا نستخدم الفرق بين $$\mathbb P(\mathcal X, \mathcal Y) - \mathbb P(\mathcal X) \mathbb P(\mathcal Y)$$ لقياس ما إذا كانت المتغيرات تابعة أو مستقلة. في حالة رمي النرد، رأينا أنه عندما تكون المتغيرات مستقلة، فإن القيمة المطلقة للفرق أقل من $$0.009$$؛ لكن هذا ليس بأي حال تعريفًا رسميًا.
 
-Hypothesis testing aims to measure whether the data collected agrees with a null hypothesis or can be discarted. For example, let us believe that the exposure of a particular substance is the cause of a deadly disease, then the following experiment can be created. On the one hand, there is a group that has been exposed to the substance, and on the other hand, the group has not been exposed. These two groups allow to accept or reject the null hypothesis that the substance is not related to the disease.  
+يهدف اختبار الفرضيات إلى قياس ما إذا كانت البيانات المجمعة تتفق مع فرضية العدم أو يمكن استبعادها. مثلاً لنعتقد أن التعرض لمادة معينة هو سبب مرض مميت، فيمكن إنشاء التجربة التالية: من جهة هناك مجموعة تعرضت للمادة، ومن جهة أخرى المجموعة التي لم تتعرض. تسمح هاتان المجموعتان بقبول أو رفض فرضية العدم القائلة بأن المادة غير مرتبطة بالمرض.
 
-In the case at hand, hypothesis testing is helpful to state the dependency or independence of the random variables. One measures whether the estimated bivariate distribution supports the null hypothesis that the variables are independent, i.e., $$\mathcal H_0: \mathbb P(\mathcal X, \mathcal Y) - \mathbb P(\mathcal X) \mathbb P(\mathcal Y) = 0;$$ where the alternative hypothesis is $$\mathcal H_1: \mathbb P(\mathcal X, \mathcal Y) - \mathbb P(\mathcal X) \mathbb P(\mathcal Y) \neq 0.$$
+في الحالة المطروحة، اختبار الفرضيات مفيد لتحديد تبعية أو استقلالية المتغيرات العشوائية. يُقاس ما إذا كان التوزيع ثنائي المتغير المقدَّر يدعم فرضية العدم القائلة بأن المتغيرات مستقلة، أي $$\mathcal H_0: \mathbb P(\mathcal X, \mathcal Y) - \mathbb P(\mathcal X) \mathbb P(\mathcal Y) = 0$$؛ حيث الفرضية البديلة هي $$\mathcal H_1: \mathbb P(\mathcal X, \mathcal Y) - \mathbb P(\mathcal X) \mathbb P(\mathcal Y) \neq 0$$.
 
-One can use different procedures in Hypothesis testing; selecting one of them depends on the characteristics of the random variables and the type of test. We will use two different tests for the problem we are dealing with: the [Wald test](#sec:wald-test) and the other is [Likelihood ratios](#sec:likelihood-ratios).
+يمكن استخدام إجراءات مختلفة في اختبار الفرضيات؛ ويعتمد اختيار أحدها على خصائص المتغيرات العشوائية ونوع الاختبار. سنستخدم اختبارين مختلفين للمسألة التي نتعامل معها: [اختبار والد](#sec:wald-test) و [نسب الترجيح](#sec:likelihood-ratios).
 
-## The Wald Test
+## اختبار والد
 {: #sec:wald-test}
 
-The Wald test is defined using the $$\hat \theta$$ which is the estimation of $$\theta$$ and $$\hat{\textsf{se}}$$ the estimated standard error of $$\hat \theta$$. The null and alternative hypothesis are $$\mathcal H_0: \hat \theta = \theta_0$$ and $$\mathcal H_1: \hat \theta \neq \theta_0,$$ respectively. Additionally, considering that $$\hat \theta$$ is asymptotically normal, i.e., $$\frac{\hat \theta - \theta_0}{\hat{\textsf{se}}} \rightsquigarrow \mathcal N(0, 1),$$ it can be defined that the size $$\alpha$$ of the Wald test is rejecting $$\mathcal H_0$$ when $$\mid W \mid > z_{\frac{\alpha}{2}}$$ where
+يُعرَّف اختبار والد باستخدام $$\hat \theta$$ الذي هو تقدير $$\theta$$ و $$\hat{\textsf{se}}$$ الخطأ المعياري المقدَّر لـ $$\hat \theta$$. فرضية العدم والفرضية البديلة هما $$\mathcal H_0: \hat \theta = \theta_0$$ و $$\mathcal H_1: \hat \theta \neq \theta_0$$ على التوالي. بالإضافة إلى ذلك، بالنظر إلى أن $$\hat \theta$$ طبيعي تقاربيًا، أي $$\frac{\hat \theta - \theta_0}{\hat{\textsf{se}}} \rightsquigarrow \mathcal N(0, 1)$$، يمكن تعريف أن حجم $$\alpha$$ لاختبار والد هو رفض $$\mathcal H_0$$ عندما $$\mid W \mid > z_{\frac{\alpha}{2}}$$ حيث:
 
 $$W = \frac{\hat \theta - \theta_0}{\hat{\textsf{se}}}.$$
 
-The relationship between $$\hat \theta$$, $$\hat{\textsf{se}}$$ and $$\theta_0$$ with $$\mathbb P(\mathcal X, \mathcal Y)$$ and $$\mathbb P(\mathcal X) \mathbb P(\mathcal Y)$$ is the following. $$\theta_0$$ defines the null hypothesis that in our case is that the variables are independent, i.e., $$\mathbb P(\mathcal X) \mathbb P(\mathcal Y).$$ On the other hand, $$\mathbb P(\mathcal X, \mathcal Y)$$ corresponds to $$\hat \theta$$ and $$\hat{\textsf{se}}$$ is the estimated standard error of $$\mathbb P(\mathcal X, \mathcal Y).$$ 
+العلاقة بين $$\hat \theta$$ و $$\hat{\textsf{se}}$$ و $$\theta_0$$ مع $$\mathbb P(\mathcal X, \mathcal Y)$$ و $$\mathbb P(\mathcal X) \mathbb P(\mathcal Y)$$ هي كالتالي. $$\theta_0$$ يُعرِّف فرضية العدم التي في حالتنا هي أن المتغيرات مستقلة، أي $$\mathbb P(\mathcal X) \mathbb P(\mathcal Y)$$. من ناحية أخرى، $$\mathbb P(\mathcal X, \mathcal Y)$$ يقابل $$\hat \theta$$ و $$\hat{\textsf{se}}$$ هو الخطأ المعياري المقدَّر لـ $$\mathbb P(\mathcal X, \mathcal Y)$$.
 
-We can estimate the values for $$\hat \theta$$ and $$\theta_0$$, the only variable missing is $$\hat{\textsf{se}}$$. The standard error is defined as $$\textsf{se} = \sqrt{V(\hat \theta)}$$, in this case $$\theta = \mathbb P(\mathcal X_r, \mathcal X_c)$$ is a bivariate distribution where the pair of random variables are drawn from a Categorical distribution with parameter $$\mathbf p$$. The variance of a Categorical distribution is $$\mathbf p_i = \mathbf p_i (1 - \mathbf p_i),$$ and the variance of $$\hat{\mathbf p_i}$$ is $$\frac{\mathbf p_i (1 - \mathbf p_i)}{N};$$ therefore, $$\hat{\textsf{se}} = \sqrt{\frac{\mathbf p_i (1 - \mathbf p_i)}{N}}.$$ 
+يمكننا تقدير قيم $$\hat \theta$$ و $$\theta_0$$، المتغير الوحيد الناقص هو $$\hat{\textsf{se}}$$. الخطأ المعياري يُعرَّف كـ $$\textsf{se} = \sqrt{V(\hat \theta)}$$، في هذه الحالة $$\theta = \mathbb P(\mathcal X_r, \mathcal X_c)$$ هو توزيع ثنائي المتغير حيث زوج المتغيرات العشوائية يُسحب من توزيع فئوي بمعلمة $$\mathbf p$$. تباين التوزيع الفئوي هو $$\mathbf p_i = \mathbf p_i (1 - \mathbf p_i)$$، وتباين $$\hat{\mathbf p_i}$$ هو $$\frac{\mathbf p_i (1 - \mathbf p_i)}{N}$$؛ وبالتالي $$\hat{\textsf{se}} = \sqrt{\frac{\mathbf p_i (1 - \mathbf p_i)}{N}}$$.
 
-For example, the Wald test for data collected on the [two rolling dices](#sec:rolling-two-dices) example is computed as follows. Variable `Z` contains the drawn from two dices with the characteristic that $$\mathcal X_r=2$$ with a probability $$0.1$$ when $$\mathcal X_c=1.$$ Variable $$W$$ is the estimated bivariate distribution, i.e., $$\theta$$, $$\hat{\textsf{se}}$$ is identified using `W` as shown in the second line, and, finally, the third line has the Wald statistic. 
+مثلاً، اختبار والد للبيانات المجمعة في مثال [رمي نردين](#sec:rolling-two-dices) يُحسب كالتالي. المتغير `Z` يحتوي على السحب من نردين بخاصية أن $$\mathcal X_r=2$$ باحتمال $$0.1$$ عندما $$\mathcal X_c=1$$. المتغير `W` هو التوزيع ثنائي المتغير المقدَّر أي $$\theta$$، $$\hat{\textsf{se}}$$ يُحدَّد باستخدام `W` كما في السطر الثاني، وأخيرًا السطر الثالث يحتوي على إحصائية والد.
 
 ```python
 N = len(Z)
@@ -420,14 +419,14 @@ se = np.sqrt(W * (1 - W) / N)
 wald = (W - ind) / se 
 ```
 
-The Wald statistic is seen in the following matrix; the absolute value of the elements are compared against $$z_{\frac{\alpha}{2}}$$ to accept or reject the null hypothesis. $$z_{\alpha}$$ is the inverse of the standard normal distribution (i.e., $$\mathcal N(0, 1)$$) that gives the probability $$1-\alpha$$, traditionally $$\alpha$$ is $$0.1$$ or $$0.05$$. For a $$\alpha=0.01$$ the value of $$z_{\frac{\alpha}{2}}$$ is approximately $$2.58$$ (variable `c`).
+إحصائية والد موضحة في المصفوفة التالية؛ تُقارن القيمة المطلقة للعناصر مع $$z_{\frac{\alpha}{2}}$$ لقبول أو رفض فرضية العدم. $$z_{\alpha}$$ هو معكوس التوزيع الطبيعي المعياري (أي $$\mathcal N(0, 1)$$) الذي يعطي الاحتمال $$1-\alpha$$، تقليديًا $$\alpha$$ هو $$0.1$$ أو $$0.05$$. لـ $$\alpha=0.01$$ قيمة $$z_{\frac{\alpha}{2}}$$ تقريبًا $$2.58$$ (المتغير `c`).
 
 ```python
 alpha = 0.01
 c = norm.ppf(1 - alpha / 2)
 ```
 
-Comparing the absolute values of `W` against $$2.58$$, it is observed that $$\mathcal X_r=2$$ and $$\mathcal X_c=1$$ are dependent which corresponds to the designed of the experiment, the other pair that is found dependent is $$\mathcal X_r=4$$ and $$\mathcal X_c=1.$$
+بمقارنة القيم المطلقة لـ `W` مع $$2.58$$، يُلاحظ أن $$\mathcal X_r=2$$ و $$\mathcal X_c=1$$ تابعان وهو ما يتوافق مع تصميم التجربة، والزوج الآخر الذي وُجد تابعًا هو $$\mathcal X_r=4$$ و $$\mathcal X_c=1$$.
 
 $$
 \begin{pmatrix}
@@ -440,7 +439,7 @@ $$
 \end{pmatrix}
 $$
 
-The Wald test can also be applied to the [bigrams example](#sec:bigrams), as shown in the following code. The estimated bivariate distribution is found on variable `co_occurrence`; given that the matrix is sparse, the Wald statistic is only computed for those elements different than zero. 
+يمكن أيضًا تطبيق اختبار والد على [مثال الثنائيات](#sec:bigrams)، كما في الكود التالي. التوزيع ثنائي المتغير المقدَّر موجود في المتغير `co_occurrence`؛ بالنظر إلى أن المصفوفة متفرقة، تُحسب إحصائية والد فقط للعناصر المختلفة عن الصفر.
 
 ```python
 N = sum(list(bigrams.values()))
@@ -452,32 +451,32 @@ wald = {k: (co[i, j] - M[i] * M[j]) / se(co[i, j])
         for k, (i, j) in _}
 ```
 
-Variable `wald` contains the statistic for all the bigrams, then we need to compare it against $$z_{\frac{\alpha}{2}}$$; however, in the bigrams case, as mentioned previously, we are interested only on the bigrams that the probability of observing the pair is higher than the product of the marginals. 
+المتغير `wald` يحتوي على الإحصائية لجميع الثنائيات، ثم نحتاج لمقارنتها مع $$z_{\frac{\alpha}{2}}$$؛ لكن في حالة الثنائيات كما ذُكر سابقًا نهتم فقط بالثنائيات التي يكون فيها احتمال ملاحظة الزوج أعلى من جداء التوزيعات الهامشية.
 
 ```python
 wald = {k: v for k, v in wald.items() if v > c}
 ```
 
-It can be observed that variable `wald` has less than 10% of all the bigrams; unfortunately, these are still a lot and cannot be visualized in a table; consequently, we rely on the word cloud shown below. 
+يمكن ملاحظة أن المتغير `wald` يحتوي على أقل من 10% من جميع الثنائيات؛ لكن للأسف هذا لا يزال كثيرًا ولا يمكن عرضه في جدول؛ وبالتالي نعتمد على سحابة الكلمات الموضحة أدناه.
 
-![Word Cloud using Wald Test](/NLP-Course/assets/images/wordcloud_us3.png)
+![سحابة كلمات باستخدام اختبار والد](/NLP-Course-Ar/assets/images/wordcloud_us3.png)
 
-As can be seen, the most important bigrams are similar to the ones observed on the [difference figure](#fig:wordcloud-differences); this is because the former approach and the Wald test are equivalent; the advantage of the Wald test is that there is a threshold that can be used to eliminate uninterested bigrams.
+كما يتضح، فإن الثنائيات الأكثر أهمية مشابهة لتلك المرصودة في [شكل الفرق](#fig:wordcloud-differences)؛ وذلك لأن النهج السابق واختبار والد متكافئان؛ ميزة اختبار والد هي وجود عتبة يمكن استخدامها لحذف الثنائيات غير المهمة.
 
-## Likelihood ratios
+## نسب الترجيح
 {: #sec:likelihood-ratios }
 
-The Wald test assumes normality on the estimation, which is a fair assumption when the number of counts is high; however, for the case of bigrams, as we have seen on the [Vocabulary Laws](/NLP-Course/topics/02Vocabulary), the majority of words appear infrequent; thus most of the bigrams are also infrequent. 
+يفترض اختبار والد الطبيعية في التقدير، وهو افتراض عادل عندما يكون عدد التكرارات مرتفعًا؛ لكن في حالة الثنائيات، كما رأينا في [قوانين المفردات](/NLP-Course-Ar/topics/02Vocabulary.html)، فإن غالبية الكلمات تظهر بشكل نادر؛ وبالتالي معظم الثنائيات أيضًا نادرة.
 
-The likelihood ratios are more appropriate for this problem; the idea is to model two hypotheses that encode the behavior of collocations. On the one hand, the first hypothesis is $$\mathcal H_1: \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=w_1) = p = \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=\neg w_1) $$ which corresponds to the independence assumption. On the other hand, the second hypothesis is $$\mathcal H_2: \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=w_1) = p_1 \neq p_2 = \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=\neg w_1).$$ Then the log of the likelihood ratio $\lambda$ is defined as follows:
+نسب الترجيح أكثر ملاءمة لهذه المسألة؛ الفكرة هي نمذجة فرضيتين تشفران سلوك المتلازمات اللفظية. من جهة، الفرضية الأولى هي $$\mathcal H_1: \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=w_1) = p = \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=\neg w_1)$$ والتي تقابل افتراض الاستقلالية. من جهة أخرى، الفرضية الثانية هي $$\mathcal H_2: \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=w_1) = p_1 \neq p_2 = \mathbb P(\mathcal X_c=w_2 \mid \mathcal X_r=\neg w_1)$$. ثم يُعرَّف لوغاريتم نسبة الترجيح $$\lambda$$ كالتالي:
 
 $$\log \lambda = \log \frac{\mathcal L(\mathcal H_1)}{\mathcal L(\mathcal H_2)},$$
 
-where $$\mathcal L(\mathcal H_1)$$ is the likelihood of observing the counts for words $$w_1$$ and $$w_2$$ and the bigram $$(w_1, w_2)$$ that corresponds to the hypothesis $$\mathcal H_1.$$ Equivalent, $$\mathcal L(\mathcal H_2)$$ corresponds to the likelihood of observing the counts for the second hypothesis.
+حيث $$\mathcal L(\mathcal H_1)$$ هو ترجيح ملاحظة التكرارات للكلمتين $$w_1$$ و $$w_2$$ والثنائي $$(w_1, w_2)$$ الذي يقابل الفرضية $$\mathcal H_1$$. بالمثل، $$\mathcal L(\mathcal H_2)$$ يقابل ترجيح ملاحظة التكرارات للفرضية الثانية.
 
-Using $$c_1$$, $$c_2$$, and $$c_{12}$$ for the count of the words $$w_1$$ and $$w_2$$ and the bigram $$(w_1, w_2)$$ the likelihood of the hypothesis are $$\mathcal L(\mathcal H_1)=L(c_{12}, c_1, p)L(c_2-c_{12}, N-c_1, p)$$ and $$\mathcal L(\mathcal H_2)=L(c_{12}, c_1, p_1)L(c_2-c_{12}, N-c_1, p_2),$$ where $$L(k, n, x) = x^k(1-x)^{n-k}.$$
+باستخدام $$c_1$$ و $$c_2$$ و $$c_{12}$$ لتكرار الكلمتين $$w_1$$ و $$w_2$$ والثنائي $$(w_1, w_2)$$، ترجيح الفرضيات هما $$\mathcal L(\mathcal H_1)=L(c_{12}, c_1, p)L(c_2-c_{12}, N-c_1, p)$$ و $$\mathcal L(\mathcal H_2)=L(c_{12}, c_1, p_1)L(c_2-c_{12}, N-c_1, p_2)$$، حيث $$L(k, n, x) = x^k(1-x)^{n-k}$$.
 
-The first step is to store the counts $$c_1$$ and $$c_2$$ on the variable `count`.
+الخطوة الأولى هي تخزين التكرارات $$c_1$$ و $$c_2$$ في المتغير `count`.
 
 ```python
 count = dict()
@@ -489,7 +488,7 @@ for k, v in bigrams.items():
             count[x] = v / 2
 ```
 
-The function $$L$$ and the ratio can be computed as follows.
+يمكن حساب الدالة $$L$$ والنسبة كالتالي:
 
 ```python
 N = sum(list(count.values()))
@@ -512,7 +511,7 @@ def ratio(k):
     return -2 * (f1 - f2)
 ```
 
-The last step is to obtain the statistic for each pair, and select only those bigrams where the null hypothesis (in this case $$\mathcal H_1$$) can be rejected. 
+الخطوة الأخيرة هي الحصول على الإحصائية لكل زوج، واختيار الثنائيات التي يمكن فيها رفض فرضية العدم (في هذه الحالة $$\mathcal H_1$$) فقط.
 
 ```python
 r = {k: ratio(k) for k, v in bigrams.items()}
@@ -520,12 +519,12 @@ c = chi2.ppf((1 - alpha), 1)
 r = {k: v for k, v in r.items() if np.isfinite(v) and v > c}
 ```
 
-The following figure presents the word cloud obtained using the Likelihood method, and please take a minute to compare the three different word clouds produced so far. 
+يعرض الشكل التالي سحابة الكلمات المحصلة باستخدام طريقة الترجيح، ويُرجى أخذ دقيقة لمقارنة سحابات الكلمات الثلاث المنتجة حتى الآن.
 
-![Word Cloud using Likelihood Test](/NLP-Course/assets/images/wordcloud_us4.png)
+![سحابة كلمات باستخدام اختبار الترجيح](/NLP-Course-Ar/assets/images/wordcloud_us4.png)
 <details markdown="block">
   <summary>
-    Code of the Likelihood ratios word cloud
+    كود سحابة كلمات نسب الترجيح
   </summary>
 
 ```python
@@ -536,27 +535,22 @@ plt.tight_layout()
 ```
 </details>
 
-# Activities
+# الأنشطة
 
-As seen in the figures, the bigrams do not clearly indicate the events that occurred on the day, and few bigrams can be considered as a collocation. This behavior is normal; however, we can further analyze the test data to understand their behavior better. 
+كما يتضح من الأشكال، فإن الثنائيات لا تشير بوضوح إلى الأحداث التي وقعت في ذلك اليوم، وقليل من الثنائيات يمكن اعتبارها متلازمات لفظية. هذا السلوك طبيعي؛ لكن يمكننا تحليل بيانات الاختبار بشكل أعمق لفهم سلوكها بشكل أفضل.
 
-The following figure presents the scatter plot between frequency and Wald statistic. It can be observed that the Wald statistic increases when the frequency increases. This behavior is reflected in the word cloud; the result is that the bigrams appearing are the ones with higher frequency. 
+يعرض الشكل التالي مخطط التبعثر بين التكرار وإحصائية والد. يمكن ملاحظة أن إحصائية والد تزداد عندما يزداد التكرار. ينعكس هذا السلوك في سحابة الكلمات؛ والنتيجة هي أن الثنائيات الظاهرة هي ذات التكرار الأعلى.
 
-![Wald Test Scatter Plot](/NLP-Course/assets/images/scatter_plot_hypw.png)
+![مخطط تبعثر اختبار والد](/NLP-Course-Ar/assets/images/scatter_plot_hypw.png)
 
-Conversely, the behavior of the Likelihood ratio does not present an increased value when the frequency is increased, as can be seen in the following figure; nonetheless, the word cloud is not as informative as one wishes to be. 
+على العكس، فإن سلوك نسبة الترجيح لا يُظهر قيمة متزايدة عند زيادة التكرار، كما يتضح من الشكل التالي؛ ومع ذلك، فإن سحابة الكلمات ليست مفيدة كما يرغب المرء.
 
-![Likelihood Scatter Plot](/NLP-Course/assets/images/scatter_plot_hypl.png)
+![مخطط تبعثر الترجيح](/NLP-Course-Ar/assets/images/scatter_plot_hypl.png)
 
-So far, we have used the information of January 10, 2022; in this section, we will be working with January 17, 2022, to complement our analysis of finding collocations through hypothesis testing. The following figure presents the word cloud using the Likelihood test -- it is essential to mention that it presents another limitation: it only contains 200 words corresponding to the words with higher values.
+حتى الآن، استخدمنا معلومات 10 يناير 2022؛ في هذا القسم سنعمل مع 17 يناير 2022 لاستكمال تحليلنا لإيجاد المتلازمات اللفظية من خلال اختبار الفرضيات. يعرض الشكل التالي سحابة الكلمات باستخدام اختبار الترجيح -- من الضروري ذكر أنه يعرض قيدًا آخر: فهو يحتوي فقط على 200 كلمة تقابل الكلمات ذات القيم الأعلى.
 
-![Word Cloud (2021/01/17) using Likelihood Test](/NLP-Course/assets/images/wordcloud_us5.png)
+![سحابة كلمات (2021/01/17) باستخدام اختبار الترجيح](/NLP-Course-Ar/assets/images/wordcloud_us5.png)
  
-There are some similarities with the word cloud from the other day; however, there are significant differences. For example, it can be inferred that there was snow on that day and Martin Luther King memorial day. The word cloud of the following 200 words is shown below; it can be observed that the recurrent term is snow. 
+هناك بعض التشابهات مع سحابة الكلمات من اليوم الآخر؛ لكن هناك اختلافات كبيرة. مثلاً يمكن استنتاج أنه كان هناك ثلج في ذلك اليوم ويوم ذكرى مارتن لوثر كينج. سحابة الكلمات لـ 200 كلمة التالية موضحة أدناه؛ يمكن ملاحظة أن المصطلح المتكرر هو الثلج.
 
-![Word Cloud (2021/01/17 - next 200 bigrams) using Likelihood Test](/NLP-Course/assets/images/wordcloud_us6.png)
-
-
-
-
-
+![سحابة كلمات (2021/01/17 - الـ 200 ثنائي التالية) باستخدام اختبار الترجيح](/NLP-Course-Ar/assets/images/wordcloud_us6.png)

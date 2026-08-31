@@ -1,19 +1,19 @@
 ---
 layout: default
-title: Vocabulary Laws
+title: قوانين المفردات
 nav_order: 2
 ---
 
-# Vocabulary Laws
+# قوانين المفردات
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
 
-## Libraries used
+## المكتبات المستعملة
 {: .no_toc .text-delta }
 ```python
 from microtc.utils import tweet_iterator
@@ -29,7 +29,7 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 ```
 
-## Installing external libraries
+## تثبيت المكتبات الخارجية
 {: .no_toc .text-delta }
 
 ```bash
@@ -40,15 +40,15 @@ pip install text_models
 
 ---
 
-# Introduction
+# المقدمة
 
-The journey of natural language processing starts with the simple procedure of counting words; with it, we will be able to model some characteristics of the languages, identify patterns in a text, and perform exploratory data analysis on a collection of Tweets. 
+تبدأ رحلة معالجة اللغة الطبيعية (NLP) بالإجراء البسيط المتمثل في عدّ الكلمات؛ ومن خلاله، سنتمكن من نمذجة بعض خصائص اللغات، وتحديد الأنماط في النص، وإجراء تحليل البيانات الاستكشافي (Exploratory Data Analysis) على مجموعة من التغريدات (Tweets).
 
-At this point, let us define a word as a sequence of characters bounded by a space - this is a shallow definition; however, it is suitable for most words written in Latin languages and English.
+عند هذه النقطة، دعونا نعرّف الكلمة بأنها تسلسل من المحارف (الأحرف) المفصولة بمسافة - وهذا تعريف سطحي ومبسط؛ ومع ذلك، فهو مناسب لمعظم الكلمات المكتوبة باللغات اللاتينية والإنجليزية.
 
-## Frequency of the words
+## تكرار الكلمات (Frequency of the words)
 
-The frequency of the words in a document can be computed using a dictionary. A dictionary is a data structure that associates a keyword with a value. The following code uses a dictionary (variable `word`) to count the word frequencies of texts stored in a JSON format, each one per line. It uses the function `tweet_iterator` that iterates over the file, scanning one line at a time and converting the JSON into a dictionary where the keyword text contains the text.
+يمكن حساب تكرار الكلمات في المستند باستخدام القاموس (Dictionary). القاموس هو بنية معطيات تربط مفتاحًا (Keyword) بقيمة. يستخدم الكود التالي قاموسًا (المتغير `word`) لحساب تكرارات الكلمات للنصوص المخزنة بتنسيق JSON، نص واحد في كل سطر. ويستخدم الدالة `tweet_iterator` التي تتكرر عبر الملف، حيث تفحص سطرًا واحدًا في كل مرة وتحول JSON إلى قاموس حيث يحتوي المفتاح `text` على النص.
 
 ```python
 words = dict()
@@ -62,14 +62,14 @@ for tw in tweet_iterator(TWEETS):
             words[key] = 1
 ```
 
-Method `split` returns a list of strings where the split occurs on the space character, which follows the definition of a word. Please note the use of an exception to handle the case where the keyword is not in the dictionary. As an example, the word _si_ (yes in Spanish) appears 29 times in the corpus.
+ترجع الدالة `split` قائمة من السلاسل النصية حيث يحدث التقسيم عند محرف المسافة، وهو ما يتبع تعريف الكلمة. يُرجى ملاحظة استخدام الاستثناء (Exception) للتعامل مع الحالة التي لا يكون فيها المفتاح موجودًا في القاموس. على سبيل المثال، تظهر كلمة _si_ (بمعنى نعم باللغة الإسبانية) 29 مرة في المدونة النصية (Corpus).
 
 ```python
 words['si']
 29
 ```
 
-The counting pattern is frequent, so it is implemented in the [Counter](https://docs.python.org/3/library/collections.html#collections.Counter) class under the package [collections](https://docs.python.org/3/library/collections.html); the following code implements the method described using `Counter`; the key element is the method `update,` and to make the code shorter, [list comprehension](https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions) is used. 
+نمط العدّ هذا شائع جدًا، لذا تم تطبيقه في الفئة [Counter](https://docs.python.org/3/library/collections.html#collections.Counter) ضمن حزمة [collections](https://docs.python.org/3/library/collections.html)؛ وينفذ الكود التالي الطريقة الموصوفة باستخدام `Counter`؛ العنصر الأساسي هو الدالة `update` ولجعل الكود أقصر، تم استخدام [List Comprehension](https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions).
 
 ```python
 words = Counter()
@@ -78,33 +78,33 @@ for tw in tweet_iterator(TWEETS):
     words.update([x.strip() for x in text.split()])
 ```
 
-`Counter` has another helpful method to analyze the frequencies; in particular, the `most_common` method returns the most frequent keywords. For example, the following code gets the five most common keywords. 
+تمتلك الفئة `Counter` طريقة مفيدة أخرى لتحليل التكرارات؛ بشكل خاص، ترجع الدالة `most_common` الكلمات المفتاحية الأكثر تكرارًا. على سبيل المثال، يحصل الكود التالي على الكلمات المفتاحية الخمس الأكثر شيوعًا.
 
 ```python
 words.most_common(5)
 [('de', 299), ('que', 282), ('a', 205), ('la', 182), ('el', 147)]
 ```
 
-These are the words, _of_, _what_, _a_, _the_, and _the_, respectively.
+وهذه هي الكلمات: _of_، و _what_، و _a_، و _the_، و _the_ على التوالي باللغة الإنجليزية.
 
-# Zipf's Law
+# قانون زيف (Zipf's Law)
 
-The word frequency allows defining some empirical characteristics of the language. These characteristics are essential to understand the challenges of developing an algorithm capable of understanding language. 
+يسمح تكرار الكلمات بتحديد بعض الخصائص التجريبية للغة. هذه الخصائص أساسية لفهم تحديات تطوير خوارزمية قادرة على فهم اللغة.
 
-Let us start with Zipf's law. The law relates the frequency of a word with its rank. In an order set, the rank corresponds to the element's position, e.g., the first element has the rank of one, the second has the second rank, and so on.  Explicitly, the relationship is defined as $$f \cdot r = c $$, where $$f$$ is the frequency, $$r$$ is the rank, and $$c$$ is a constant. For example, the frequency is $$f=\frac{c}{r}$$; as can be seen when the rank equals the constant, then the frequency is one, meaning that the rest of the words are infrequent and that there are only frequent few words. 
+لنبدأ بقانون زيف (Zipf's Law). يربط هذا القانون بين تكرار الكلمة ورتبتها (Rank). في المجموعة المرتبة، ترمز الرتبة إلى موضع العنصر، مثلًا العنصر الأول رتبته واحد، والعنصر الثاني رتبته اثنان، وهكذا. وبشكل صريح، تُعرّف العلاقة على أنها $$f \cdot r = c$$، حيث $$f$$ هو التكرار، و $$r$$ هو الرتبة، و $$c$$ ثابت. على سبيل المثال، التكرار هو $$f=\frac{c}{r}$$؛ وكما يتضح عندما تسوي الرتبة الثابت، فإن التكرار يكون واحدًا، مما يعني أن بقية الكلمات غير متكررة وهناك عدد قليل فقط من الكلمات الشائعة التكرار.
 
-The following figure depicts the described characteristic. It shows a scatter plot between rank and frequency. 
+يصل الشكل التالي الخصائص الموصوفة. حيث يوضح رسمًا بيانيًا متشتتًا (Scatter plot) بين الرتبة والتكرار.
 
-![Zipf's Law](/NLP-Course/assets/images/zipf_law.png)
+![Zipf's Law](/NLP-Course-Ar/assets/images/zipf_law.png)
 
-The frequency and the rank can be computed with the following two lines using the dataset of the previous example. 
+يمكن حساب التكرار والرتبة باستخدام السطرين التاليين باستخدام مجموعة البيانات من المثال السابق.
 
 ```python
 freq = [f for _, f  in words.most_common()]
 rank = range(1, len(freq) + 1)
 ```
 
-Once the frequency and the rank are computed, the figure is created using the following code. 
+بمجرد حساب التكرار والرتبة، يتم إنشاء الشكل باستخدام الكود التالي.
 
 ```python
 plt.plot(rank, freq, '.')
@@ -114,22 +114,22 @@ plt.ylabel('Frequency')
 plt.tight_layout()
 ```
 
-The previous figure does not depict the relation $$f=\frac{c}{r}$$, in order to show it let us draw the figure scatter plot between the rank inverse and the frequency; this can be obtained by changing the following lines into the previous procedure -- [numpy](https://numpy.org) is used in the following code to create an array of elements.
+الشكل السابق لا يوضح العلاقة $$f=\frac{c}{r}$$ بشكل مباشر، ولإظهارها دعونا نرسم بيانيًا مقلوب الرتبة مقابل التكرار؛ يمكن الحصول على ذلك عن طريق تعديل الأسطر التالية في الإجراء السابق -- تم استخدام [NumPy](https://numpy.org) في الكود التالي لإنشاء مصفوفة من العناصر.
 
 ```python
 freq = [f for _, f  in words.most_common()]
 rank = 1 / np.arange(1, len(freq) + 1)
 ```
 
-As observed from the following figure, Zipf’s Law is a rough estimate of the relationship between rank and frequency. Nonetheless, it provides all the elements to understand the importance of this relationship. 
+كما يلاحظ من الشكل التالي، فإن قانون زيف هو تقدير تقريبي للعلاقة بين الرتبة والتكرار. ومع ذلك، فإنه يوفر جميع العناصر لفهم أهمية هذه العلاقة.
 
-![Log Zipf's Law](/NLP-Course/assets/images/zipf_law2.png) 
+![Log Zipf's Law](/NLP-Course-Ar/assets/images/zipf_law2.png) 
 
-## Ordinary Least Squares
+## مربعات الأخطاء الصغرى الاعتيادية (Ordinary Least Squares - OLS)
 
-The missing step is to estimate the value of $$c$$. Constant $$c$$ can be calculated using ordinary least squares (OLS). The idea is to create a system of equations where the unknown is $$c$$, and the dependent variable is $$f$$. These can represent in matrix notation as $$A \cdot \mathbf c = \mathbf f$$, where $$A \in \mathbb R^{N \times 1}$$ is composed by $$N$$ inverse rank measurements, $$c \in \mathbb R^1$$ is the parameter to be identified, and $$\mathbf f \in \mathbb R^N$$ is a column vector containing the frequency measurements.
+الخطوة المفقودة هي تقدير قيمة الثابت $$c$$. يمكن حساب الثابت $$c$$ باستخدام مربعات الأخطاء الصغرى الاعتيادية (Ordinary Least Squares - OLS). الفكرة هي إنشاء نظام من المعادلات حيث المجهول هو $$c$$، والمتغير التابع هو $$f$$. يمكن تمثيل ذلك بترميز المصفوفات كـ $$A \cdot \mathbf c = \mathbf f$$، حيث تتكون $$A \in \mathbb R^{N \times 1}$$ من $$N$$ قياسًا لمقلوب الرتبة، و $$c \in \mathbb R^1$$ هو المعلمة المراد تحديدها، و $$\mathbf f \in \mathbb R^N$$ هو متجه عمودي يحتوي على قياسات التكرار.
 
-The coefficients can be computed using the function `np.linalg.lstsq` described in the following code.
+يمكن حساب المعاملات باستخدام الدالة `np.linalg.lstsq` الموصوفة في الكود التالي.
 
 ```python
 X = np.atleast_2d(rank).T
@@ -138,11 +138,11 @@ c
 array([461.40751913])
 ```
 
-Once $$c$$ has been identified, it can be used to predict the model; the following figure presents the measurements and the predicted points using the identified coefficient.
+بمجرد تحديد $$c$$، يمكن استخدامه للتنبؤ بالنموذج؛ ويقدم الشكل التالي القياسات والنقاط المتنبأ بها باستخدام المعامل المحدد.
 
-![Zipf's Law - model](/NLP-Course/assets/images/zipf_law3.png)
+![Zipf's Law - model](/NLP-Course-Ar/assets/images/zipf_law3.png)
 
-The previous figure was created with the following code; the variable `hy` contains the predicted frequency.
+تم إنشاء الشكل السابق بالكود التالي؛ ويحتوي المتغير `hy` على التكرار المتنبأ به.
 
 ```python
 hy = np.dot(X, c)
@@ -155,15 +155,15 @@ plt.ylabel('Frequency')
 plt.tight_layout()
 ```
 
-# Herdan’s Law / Heaps' Law
+# قانون هيردان / قانون هيبس (Herdan’s Law / Heaps' Law)
 
-A language used evolves new words are incorporated in the language, and the relationship between the vocabulary size and the number of words (tokens) is expressed in the Heaps' Law. Let $$\mid v \mid$$ represents the vocabulary size, and $$n$$ the number of words; then the relationship between these elements is $$\mid v \mid = k n^\beta$$ where $$k$$ and $$\beta$$ are the parameters that need to be identified. 
+تتطور اللغة المستعملة وتُدمج كلمات جديدة في اللغة، والتعبير عن العلاقة بين حجم المفردات (Vocabulary size) وعدد الكلمات (Tokens) يظهر في قانون هيبس (Heaps' Law). لنتفرض أن $$\mid v \mid$$ يمثل حجم المفردات، و $$n$$ عدد الكلمات؛ تكون العلاقة بين هذه العناصر هي $$\mid v \mid = k n^\beta$$ حيث $$k$$ و $$\beta$$ هما المعلمتان اللتان تحتاجان إلى تحديد.
 
-The following figure depicts the relation between $$n$$ and $$\mid v \mid$$ using the dataset of the previous examples.
+يوضح الشكل التالي العلاقة بين $$n$$ و $$\mid v \mid$$ باستخدام مجموعة البيانات من الأمثلة السابقة.
 
-![Heaps' Law](/NLP-Course/assets/images/heaps_law.png) 
+![Heaps' Law](/NLP-Course-Ar/assets/images/heaps_law.png) 
 
-Taking the procedure used in Zipf's Law as a starting point, it is only needed to collect, for each line, the number of words and the vocabulary.
+باستخدام الإجراء المستعمل في قانون زيف كنقطة بداية، يحتاج الأمر فقط لجمع عدد الكلمات وحجم المفردات لكل سطر.
 
 ```python
 words = Counter()
@@ -178,39 +178,39 @@ n = [x[0] for x in tokens_voc]
 v = [x[1] for x in tokens_voc]
 ```
 
-Once the points (number of words and vocabulary size) are measured, it is time to estimate the parameters $$k$$ and $$\beta$$. As can be observed, it is not possible to express the Heaps' Law as a system of equations such as $$A \cdot [k, \beta]^\intercal = \mid \mathbf v \mid$$; consequently, these parameters cannot be estimated using OLS.
+بمجرد قياس النقاط (عدد الكلمات وحجم المفردات)، حان الوقت لتقدير المعلمتين $$k$$ و $$\beta$$. كما هو ملاحظ، لا يمكن التعبير عن قانون هيبس كنظام معادلات مثل $$A \cdot [k, \beta]^\intercal = \mid \mathbf v \mid$$؛ وبالتالي، لا يمكن تقدير هذه المعلمات باستخدام OLS.
 
-## Optimization
+## التحسين / الأَمْثَلَة (Optimization)
 {: #sec:optimization }
 
-The values of these parameters can be estimated by posing them as an optimization problem. An optimization problem minimizes (maximizes) an objective function. The goal is to find the inputs corresponding to the minimum (maximum) of the function, i.e., 
+يمكن تقدير قيم هذه المعلمات بصياغتها كـ مسألة تحسين (Optimization problem). تقلل مسألة التحسين (أو تعظم) دالة الهدف (Objective function). والهدف هو العثور على المدخلات المقابلة للحد الأدنى (أو الأقصى) للدالة، أي:
 
 $$\min_{\mathbf w \in \Omega} f(\mathbf w),$$
 
-where $$\mathbf w$$ are the inputs of the function $$f$$, and $$\Omega$$ is the search space, namely the set containing all feasible values of the inputs, e.g., $$\Omega = \{\mathbf w \mid \mathbf w \in \mathbb R^d, \forall_i \mathbf w_i \geq 0\}$$ that represents all the vector of dimension $$d$$ whose components are equal or greater than zero. 
+حيث $$\mathbf w$$ هي مدخلات الدالة $$f$$، و $$\Omega$$ هو فضاء البحث (Search space)، أي المجموعة التي تحتوي على جميع القيم الممكنة للمدخلات، على سبيل المثال، $$\Omega = \{\mathbf w \mid \mathbf w \in \mathbb R^d, \forall_i \mathbf w_i \geq 0\}$$ التي تمثل متجه الأبعاد $$d$$ التي تكون مكوناته أكبر من أو تساوي الصفر.
 
-There are many optimization algorithms; some are designed to tackle all possible optimization problems, and others are tailored for a particular class of problems. For example, OLS is an optimization algorithm where the objective function $$f$$ is defined as:
+هناك العديد من خوارزميات التحسين؛ بعضها مصمم لمعالجة جميع مسائل التحسين الممكنة، والبعض الآخر مصمم لفئة معينة من المسائل. على سبيل المثال، OLS هي خوارزمية تحسين حيث تُعرف دالة الهدف $$f$$ على أنها:
 
 $$f(\mathbf w) = \sum_{i=1}^N (y_i - \mathbf a_i \cdot \mathbf w)^2,$$
 
-where $$\mathbf w$$ is a vector containing the parameters, and $$\mathbf a_i$$ is the $$i$$-th measurement of the independent variables, and $$y_i$$ is the corresponding dependent variable. In the Zipf's Law example, $$\mathbf w$$ corresponds to the parameter $$c$$, $$\mathbf a_i$$ is the $$i$$-the measure of the inverse rank, and $$y_i$$ is the corresponding frequency. 
+حيث $$\mathbf w$$ هو متجه يحتوي على المعلمات، و $$\mathbf a_i$$ هو القياس الرقمي $$i$$ للمتغيرات المستقلة، و $$y_i$$ هو المتغير التابع المقابل. في مثال قانون زيف، يتوافق $$\mathbf w$$ مع المعلمة $$c$$، و $$\mathbf a_i$$ مع المقياس $$i$$ لمقلوب الرتبة، و $$y_i$$ مع التكرار المقابل.
 
-Let us analyze in more detail the previous objective function. The sum goes for all the measurements; there are $$N$$ pairs of observations composed by the response (dependent variable) and the independent variables. For each observation $$i$$, the square error is computed between the dependent variable ($$y_i$$) and the dot product of the independent variable ($$\mathbf a_i$$) and parameters ($$\mathbf x$$). 
+دعونا نحلل بالتفصيل دالة الهدف السابقة. يمر المجموع على جميع القياسات؛ هناك $$N$$ من أزواج الملاحظات المكونة من الاستجابة (المتغير التابع) والمتغيرات المستقلة. لكل ملاحظة $$i$$، يتم حساب مربع الخطأ بين المتغير التابع ($$y_i$$) والضرب النقطي للمتغير المستقل ($$\mathbf a_i$$) والمعلمات ($$\mathbf x$$).
 
-This notation is specific for OLS; however, it is helpful to define the general case. The first step is to define the set $$\mathcal D$$ composed by the $$N$$ observations, i.e., $$\mathcal D=\{(\mathbf x_i, y_i) \mid 1 \leq i \leq N\}$$ where $$y_i$$ is the response variable and $$\mathbf x$$ contains the independent variables. The second step is to  use an unspecified loss function as $$L(y, \hat y) = (y - \hat y)^2$$. The last step is to abstract the model, that is replace $$\mathbf a_i \cdot \mathbf w$$ with a function $$g(\mathbf x) = \mathbf a_i \cdot \mathbf w$$.  Combining these components the general version of the OLS optimization problem can be expressed as:
+هذا الترميز خاص بـ OLS؛ ومع ذلك، فإنه مفيد لتعريف الحالة العامة. الخطوة الأولى هي تعريف المجموعة $$\mathcal D$$ المكونة من الملاحظات $$N$$، أي $$\mathcal D=\{(\mathbf x_i, y_i) \mid 1 \leq i \leq N\}$$ حيث $$y_i$$ هو متغير الاستجابة و $$\mathbf x$$ يحتوي على المتغيرات المستقلة. الخطوة الثانية هي استخدام دالة خسارة (Loss function) غير محددة مثل $$L(y, \hat y) = (y - \hat y)^2$$. الخطوة الأخيرة هي تجريد النموذج، أي استبدال $$\mathbf a_i \cdot \mathbf w$$ بدالة $$g(\mathbf x) = \mathbf a_i \cdot \mathbf w$$. وبدمج هذه المكونات، يمكن التعبير عن النسخة العامة لمسألة تحسين OLS كـ:
 
 {: #eq:supervised-learning-optimization }
 $$\min_{g \in \Omega} \sum_{(\mathbf x, y) \in \mathcal D} L(y, g(\mathbf x)),$$
- 
-where $$g$$ are all the functions defined in the search space $$\Omega$$, $$L$$ is a loss function, and $$\mathcal D$$ contains $$N$$ pairs of observations. This optimization problem is known as **supervised learning** in machine learning.
 
-Returning to Heaps' Law problem where the goal is to identify the coefficients $$k$$ and $$\beta$$ of the model $$\mid v \mid = kn^\beta$$. That is, function $$g$$ can be defined as $$g_{k,\alpha}(n) = kn^\beta$$ and using the square error as $$L$$ the optimization problem is:
+حيث $$g$$ هي جميع الدوال المعرفة في فضاء البحث $$\Omega$$، و $$L$$ هي دالة الخسارة، وتختزن $$\mathcal D$$ على $$N$$ من أزواج الملاحظات. تُعرف مسألة التحسين هذه باسم **التعلم الخاضع للإشراف (Supervised Learning)** في تعلم الآلة.
+
+بالعودة إلى مسألة قانون هيبس حيث الهدف هو تحديد المعاملين $$k$$ و $$\beta$$ للنموذج $$\mid v \mid = kn^\beta$$. أي يمكن تعريف الدالة $$g$$ كـ $$g_{k,\alpha}(n) = kn^\beta$$ وباستخدام مربع الخطأ كـ $$L$$ تكون مسألة التحسين هي:
 
 $$\min_{(k, \beta) \in \mathbb R^2} \sum_{(n, \mid v \mid) \in \mathcal D} (\mid v \mid -  kn^\beta)^2.$$
 
-As mentioned previously, there are many optimization algorithms; some can be found on the function [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html). The function admits as arguments the objective function and the initial values of the parameters. 
+كما ذكر سابقًا، هناك العديد من خوارزميات التحسين؛ يمكن العثور على بعضها في الدالة [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html). تقبل الدالة كوسيائط (Arguments) دالة الهدف والقيم الأولية للمعلمات.
 
-The following code solves the optimization problem using the `minimize` function. 
+يحل الكود التالي مسألة التحسين باستخدام الدالة `minimize`.
 
 ```python
 def f(w, y, x):
@@ -225,18 +225,18 @@ k, beta
 (2.351980550243793, 0.8231559504194587)
 ```
 
-Once $$k$$ and $$\beta$$ have been identified, it is possible to use them in the Heaps' Law and produce a figure containing the measurements and predicted values.
+بمجرد تحديد $$k$$ و $$\beta$$، يمكن استخدامهما في قانون هيبس وإنتاج شكل يحتوي على القياسات والقيم المتنبأ بها.
 
-![Heaps' Law - model](/NLP-Course/assets/images/heaps_law2.png)
+![Heaps' Law - model](/NLP-Course-Ar/assets/images/heaps_law2.png)
 
 
-# Activities
+# الأنشطة والتمارين (Activities)
 
-Zipf's Law and Heaps' Law model two language characteristics; these characteristics are summarized in the values of the parameters $$c$$ and $$k$$ and $$\beta$$ respectively.  So far, we have identified these parameters using a toy dataset. In order to illustrate how these parameters can be used to compare languages, we are going to use a dataset of words (and bi-grams) available in a library [text_models](https://github.com/INGEOTEC/text_models) described in [A Python library for exploratory data analysis on twitter data based on tokens and aggregated origin–destination information](https://www.sciencedirect.com/science/article/pii/S0098300421002946).
+ينمذج قانون زيف وقانون هيبس خاصيتين من خصائص اللغة؛ وتلخص هذه الخصائص في قيم المعلمتين $$c$$ و $$k$$ و $$\beta$$ على التوالي. حتى الآن، قمنا بتحديد هذه المعلمات باستخدام مجموعة بيانات توضيحية. ولتوضيح كيف يمكن استخدام هذه المعلمات لمقارنة اللغات، سنستخدم مجموعة بيانات من الكلمات (والكلمات الثنائية Bi-grams) المتاحة في مكتبة [text_models](https://github.com/INGEOTEC/text_models) الموصوفة في المقال العلمي [A Python library for exploratory data analysis on twitter data based on tokens and aggregated origin–destination information](https://www.sciencedirect.com/science/article/pii/S0098300421002946).
 
-`text_models` contains the frequency of words and bigrams of words measured from tweets written in different languages (Arabic, Spanish, and English) and collected from the Twitter open stream. 
+تحتوي `text_models` على تكرار الكلمات والكلمات الثنائية (Bi-grams) المقاسة من التغريدات المكتوبة بلغات مختلفة (العربية، الإسبانية، والإنجليزية) والمجمعة من البث المفتوح لتويتر.
 
-The first step is to retrieve the information from a particular date, location, and language. As an example, let us retrieve the data corresponding to January 10, 2022, in Mexico and written in Spanish, which can be done with the following code. 
+الخطوة الأولى هي استرجاع المعلومات لتاريخ وموقع ولغة معينة. على سبيل المثال، دعونا نسترجع البيانات المقابلة لتاريخ 10 يناير 2022 في المكسيك والمكتوبة بالإسبانية، وهو ما يمكن القيام به باستخدام الكود التالي.
 
 ```python
 date = dict(year=2022, month=1, day=10)
@@ -244,14 +244,14 @@ voc = Vocabulary(date, lang='Es', country='MX')
 words = {k: v for k, v in voc.voc.items() if not k.count('~')}
 ```
 
-Variable `voc` contains the frequency of the words and bigrams and some useful functions to distill the information and perform an exploratory data analysis on the data. The raw data is stored in a dictionary on the variable `voc.voc`. The bi-grams are identified with the character '~', e.g., 'of~the' corresponds to the bi-gram of the words _of_ and _the_. Finally, the variable `words` contains the frequency of the words.
+يحتوي المتغير `voc` على تكرار الكلمات والكلمات الثنائية وبعض الدوال المفيدة لتصفية المعلومات وإجراء تحليل بيانات استكشافي على البيانات. تُخزن البيانات الخام في قاموس في المتغير `voc.voc`. ويتم التعرف على الكلمات الثنائية (Bi-grams) بالمحرف '~'، مثلًا 'of~the' يتوافق مع الكلمة الثنائية للكلمتين _of_ و _the_. أخيرًا، يحتوي المتغير `words` على تكرار الكلمات.
 
-A traditional approach to explore the information of a list of words and their frequencies is to create a word cloud. The following figure is the word cloud of the frequency of the words retrieved from `text_models.` 
+إن النهج التقليدي لاستكشاف معلومات قائمة الكلمات وتكراراتها هو إنشاء سحابة كلمات (Word Cloud). الشكل التالي هو سحابة الكلمات لتكرار الكلمات المسترجعة من `text_models.`
 
-![Word Cloud (MX)](/NLP-Course/assets/images/wordcloud_mx.png)
+![Word Cloud (MX)](/NLP-Course-Ar/assets/images/wordcloud_mx.png)
 <details markdown="block">
   <summary>
-    Code of the word cloud
+    كود سحابة الكلمات (Code of the word cloud)
   </summary>
 
 ```python
@@ -263,9 +263,9 @@ plt.tight_layout()
 </details>
 
 
-## Zipf's Law - $$f=\frac{c}{r}$$
+## قانون زيف - $$f=\frac{c}{r}$$ (Zipf's Law)
 
-We are in the position to identify the Zips' Law coefficient from a dataset retrieved from `text_models.` In this part, the goal is to estimate $$c$$ from all the Spanish-speaking countries on a particular date, January 10, 2022. On this occasion, the library [joblib](https://joblib.readthedocs.io/en/latest/) is used to parallelize the code, particularly the class `Parallel.` As can be seen, the variable `words` is a list of dictionaries containing the words frequency for all the countries.
+نحن في موقع يسمح لنا بتحديد معامل قانون زيف من مجموعة بيانات مسترجعة من `text_models.` في هذا الجزء، الهدف هو تقدير $$c$$ من جميع الدول الناطقة بالإسبانية في تاريخ معين، 10 يناير 2022. في هذه المناسبة، تُستخدم المكتبة [joblib](https://joblib.readthedocs.io/en/latest/) لتشغيل الكود بالتوازي، وتحديدًا الفئة `Parallel.` كما يمكن ملاحظته، فإن المتغير `words` هو قائمة من القواميس التي تحتوي على تكرارات الكلمات لجميع الدول.
 
 ```python
 countries = ['MX', 'CO', 'ES', 'AR',
@@ -281,7 +281,7 @@ words = [{k: v for k, v in voc.voc.items() if not k.count('~')}
          for voc in vocs]
 ```
 
-The next step is to estimate the $$c$$ coefficient of Zipf's Law. Function `zipf` identifies the coefficient using OLS from a dictionary of words frequency. Variable `zipf_c` contains the coefficient values for each country, and we also computed the number of words seen, which is stored in variable `tokens.` 
+الخطوة التالية هي تقدير المعامل $$c$$ لقانون زيف. تحدد الدالة `zipf` المعامل باستخدام OLS من قاموس تكرار الكلمات. يحتوي المتغير `zipf_c` على قيم المعامل لكل دولة، وقيل قمنا أيضًا بحساب عدد الكلمات المرئية، والمخزنة في المتغير `tokens.`
 
 ```python
 def zipf(data):
@@ -294,9 +294,9 @@ zipf_c = [zipf(w) for w in words]
 tokens = [sum(list(w.values())) for w in words]
 ```
 
-The following table presents the coefficient $$c$$ and the number of words ($$n$$) for all the countries. The table is sorted by $$c$$ in descending order. It can be seen that $$c$$ and $$n$$ are highly correlated, so this version of Zipf's Law only characterizes the total number of words seen on the dataset. 
+يقدم الجدول التالي المعامل $$c$$ وعدد الكلمات ($$n$$) لجميع الدول. الجدول مرتب حسب $$c$$ بترتيب تنازلي. يمكن ملاحظة أن $$c$$ و $$n$$ مرتبطتان بشكل وثيق، لذا فإن هذه النسخة من قانون زيف تصف فقط إجمالي عدد الكلمات المشاهدة في مجموعة البيانات.
 
-| Country | $$c$$ | $$n$$| 
+| الدولة (Country) | $$c$$ | $$n$$| 
 |---------|-------|------|
 | AR | 28383.27 | 405802 |
 | ES | 21392.39 | 267724 |
@@ -318,30 +318,29 @@ The following table presents the coefficient $$c$$ and the number of words ($$n$
 | SV | 513.01 | 5703 |
 | BO | 416.46 | 4306 |
 
-The following table shows the correlation of $$c$$ and $$n$$; it is observed that the correlation between them is higher than $$0.99$$, this means that measuring the number of words is enough and there is no need to estimate $$c$$. 
+يوضح الجدول التالي التلازم/الارتباط بين $$c$$ و $$n$$؛ ويلاحظ أن الارتباط بينهما أعلى من $$0.99$$، وهذا يعني أن قياس عدد الكلمات كافٍ ولا داعي لتقدير $$c$$.
 
 |     |$$c$$   |$$n$$   |
 |-----|--------|--------|
 |$$c$$| 1.0000 | 0.9979 |
 |$$n$$| 0.9979 | 1.0000 |
 
-The correlation is obtained using the following code.
+تم الحصول على الارتباط باستخدام الكود التالي.
 
 ```python
 X = np.array([(b[0], c) for b, c in zip(zipf_c, tokens)])
 corr = np.corrcoef(X.T)
 ```
 
-## Zipf's Law - $$f=\frac{c}{r^\alpha}$$
+## قانون زيف - $$f=\frac{c}{r^\alpha}$$ (Zipf's Law)
 
-Zipf's Law has different versions; we started with the simpler one; however, that version does not provide information that the one contained in the number of words. A straightforward approach is to change the constant in Zipf's Law with a parameter and then use an algorithm to estimate that constant. Zipf's Law has the following form $$f=\frac{c}{r^1}$$, where the constant is $$1$$; changing $$1$$ by $$\alpha$$ it is obtained $$f=\frac{c}{r^\alpha}$$. Without considering the meaning of the variables on this later version of Zipf's Law, one can see the similarities between Zipf's Law and Heap's Law formulation; both have a multiplying constant $$c$$ and $$k$$, and an exponential one $$\alpha$$ and $$\beta$$. 
+قانون زيف له نسخ مختلفة؛ بدأنا بالنسخة الأبسط؛ ومع ذلك، لا توفر تلك النسخة معلومات أكثر مما هو محتواة في عدد الكلمات. النهج المباشر هو تغيير الثابت في قانون زيف بمعلمة ثم استخدام خوارزمية لتقدير ذلك الثابت. قانون زيف له الشكل التالي $$f=\frac{c}{r^1}$$، حيث الثابت هو $$1$$؛ بتغيير $$1$$ بـ $$\alpha$$ يتم الحصول على $$f=\frac{c}{r^\alpha}$$. دون النظر إلى معنى المتغيرات في هذه النسخة اللاحقة من قانون زيف، يمكن للمرء أن يرى التشابه بين صيغة قانون زيف وصيغة قانون هيبس؛ كلاهما يحتوي على ثابت مضروب $$c$$ و $$k$$، وأس مكسور $$\alpha$$ و $$\beta$$.
 
-Coefficients $$c$$ and $$\alpha$$ can be estimated using the dataset stored in variable `words,` the procedure is a combination of the approach used to identify $$c$$ in the previous formulation and the algorithm described to estimate $$k$$ and $$\beta$$ of the Heap's Law.
+يمكن تقدير المعاملين $$c$$ و $$\alpha$$ باستخدام مجموعة البيانات المخزنة في المتغير `words,` الإجراء هو مزيج من النهج المستعمل لتحديد $$c$$ في الصيغة السابقة والخوارزمية الموصوفة لتقدير $$k$$ و $$\beta$$ لقانون هيبس.
 
-The following table shows the values of the coefficients $$c$$, $$\alpha$$, and the number of words for the different countries. 
+يوضح الجدول التالي قيم المعاملات $$c$$ و $$\alpha$$ وعدد الكلمات للدول المختلفة.
 
-
-| Country | $$c$$ | $$\alpha$$ | $$n$$ |
+| الدولة (Country) | $$c$$ | $$\alpha$$ | $$n$$ |
 |---------|-------|------------|-------|
 | AR | 24606.53 | 0.7627 | 405802 |
 | MX | 17533.38 | 0.7715 | 269211 |
@@ -363,7 +362,7 @@ The following table shows the values of the coefficients $$c$$, $$\alpha$$, and 
 | SV | 435.75 | 0.7460 | 5703 |
 | BO | 352.77 | 0.7409 | 4306 |
 
-The correlation of these variables can be seen in the following table. It is observed that $$c$$ is highly correlated with the number of words $$n$$. On the other hand, the correlation between $$\alpha$$ and $$n$$ indicates that these variables contain different information. 
+يمكن رؤية ارتباط هذه المتغيرات في الجدول التالي. يلاحظ أن $$c$$ يرتبط بشكل كبير بعدد الكلمات $$n$$. من ناحية أخرى، فإن الارتباط بين $$\alpha$$ و $$n$$ يشير إلى أن هذه المتغيرات تحتوي على معلومات مختلفة.
 
 |        |$$c$$   |$$\alpha$$|$$n$$ |
 |--------|--------|--------|--------|
@@ -372,11 +371,11 @@ The correlation of these variables can be seen in the following table. It is obs
 |$$n$$| 0.9975 | 0.6308 | 1.0000 |
 
 
-## Heaps' Law - $$\mid v \mid = kn^\beta$$
+## قانون هيبس - $$\mid v \mid = kn^\beta$$ (Heaps' Law)
 
-Heaps' Law models the relationship between the number of words ($$n$$) and the size of the vocabulary $$\mid v \mid$$. In order to estimate the parameters, it is needed to obtain a dataset where $$n$$ is varied and for each one compute $$\mid v \mid$$. The dataset used to estimate the coefficients of Zipf's Law contains $$n$$ and $$\mid v \mid$$ for a particular date, country, and language. $$\mid v \mid$$ corresponds to the length of the dictionary, that is, the number of different words, namely the number for keys in it. Consequently, the dataset needed to estimate the coefficients of Heap's Law can be obtained by collecting measuring $$n$$ and $$\mid v \mid$$ on different days. 
+ينمذج قانون هيبس العلاقة بين عدد الكلمات ($$n$$) وحجم المفردات $$\mid v \mid$$. ولتقدير المعلمات، يلزم الحصول على مجموعة بيانات حيث تتغير $$n$$ ويتم حساب $$\mid v \mid$$ لكل قيمة. تحتوي مجموعة البيانات المستعملة لتقدير معاملات قانون زيف على $$n$$ و $$\mid v \mid$$ لتاريخ ودولة ولغة معينة. يتوافق $$\mid v \mid$$ مع طول القاموس، أي عدد الكلمات المختلفة، أي عدد المفاتيح فيه. وبالتالي، فإن مجموعة البيانات المطلوبة لتقدير معاملات قانون هيبس يمكن الحصول عليها من خلال جمع قياس $$n$$ و $$\mid v \mid$$ في أيام مختلفة.
 
-The dataset can be obtained by first creating a helper function that contains the code used to retrieve the words in the function `get_words.`
+يمكن الحصول على مجموعة البيانات عن طريق إنشاء دالة مساعدة أولاً تحتوي على الكود المستخدم لاسترجاع الكلمات في الدالة `get_words.`
 
 ```python
 COUNTRIES = ['MX', 'CO', 'ES', 'AR',
@@ -397,7 +396,7 @@ def get_words(date=dict(year=2022, month=1, day=10)):
     return words
 ```
 
-Function `get_words` retrieves the words for all the countries on a particular date; consequently,  the next step is to decide the dates to create the dataset. The following code uses the function `date_range` to create a list of dates starting from November 1, 2021, and finishing on November 30, 2021 (inclusive). Variable `words` is a list where each element corresponds to a different day containing the words frequency of all the countries; however, to estimate the coefficients, it is needed to have a dataset for each country with all the days. The last line created the desired dataset; it is a list where each element has the frequency of the words for all the days of a particular country. 
+تسترجع الدالة `get_words` الكلمات لجميع الدول في تاريخ معين؛ وبالتالي، فإن الخطوة التالية هي تحديد التواريخ لإنشاء مجموعة البيانات. يستخدم الكود التالي الدالة `date_range` لإنشاء قائمة التواريخ بدءًا من 1 نوفمبر 2021 وحتى 30 نوفمبر 2021 (شاملة). المتغير `words` عبارة عن قائمة حيث يتوافق كل عنصر مع يوم مختلف يحتوي على تكرار كلمات جميع الدول؛ ومع ذلك، لتقدير المعاملات، يلزم وجود مجموعة بيانات لكل دولة مع جميع الأيام. أنشأ السطر الأخير مجموعة البيانات المطلوبة؛ وهي قائمة حيث يحتوي كل عنصر على تكرار الكلمات لجميع أيام دولة معينة.
 
 ```python
 init = dict(year=2021, month=11, day=1)
@@ -407,7 +406,7 @@ words = [get_words(d) for d in dates]
 ww = [[w[index] for w in words] for index in range(len(COUNTRIES))]
 ```
 
-The information stored in variable `ww` contains, for each country, the information needed to create $$n$$ and $$\mid v \mid$$. Function `voc_tokens` computes $$n$$ and $$\mid v \mid$$ for the dataset given, i.e., an element of `ww`. It uses the variable `cnt` as an accumulator; it is observed that the pattern of line 3 is used every time `cnt` is updated. 
+تحتوي المعلومات المخزنة في المتغير `ww` لكل دولة على المعلومات اللازمة لإنشاء $$n$$ و $$\mid v \mid$$. تحسب الدالة `voc_tokens` قيمة $$n$$ و $$\mid v \mid$$ لمجموعة البيانات المعطاة، أي عنصر من `ww`. وتستخدم المتغير `cnt` كمراكم؛ يلاحظ أن نمط السطر 3 يُستخدم في كل مرة يتم فيها تحديث `cnt`.
 
 ```python
 def voc_tokens(data):
@@ -421,15 +420,15 @@ def voc_tokens(data):
     return output[:, 0], output[:, 1]
 ```
 
-For example, `voc_tokens` can be used to create $$n$$ and $$\mid v \mid$$ of Mexico as:
+على سبيل المثال، يمكن استخدام `voc_tokens` لإنشاء $$n$$ و $$\mid v \mid$$ للمكسيك كـ:
 
 ```python
 n_mx, v_mx = voc_tokens(ww[0])
 ```
 
-Having described how to obtain $$n$$ and $$\mid v \mid$$ for each country, it is time to use the procedure to estimate the country's $$k$$ and $$\beta$$ coefficients. The following table shows the values of these coefficients for each country; it also includes the maximum number of words ($$\max n$$) in the last column.  
+بعد وصف كيفية الحصول على $$n$$ و $$\mid v \mid$$ لكل دولة، حان الوقت لاستخدام الإجراء لتقدير المعاملين $$k$$ و $$\beta$$ للدولة. يوضح الجدول التالي قيم هذه المعاملات لكل دولة؛ ويتضمن أيضًا أقصى عدد من الكلمات ($$\max n$$) في العمود الأخير.
 
-| Country | $$k$$ | $$\beta$$ | $$\max n$$ |
+| الدولة (Country) | $$k$$ | $$\beta$$ | $$\max n$$ |
 |---------|-------|------------|-------|
 | AR | 10.19 | 0.5262 | 12883620 |
 | ES | 2.40 | 0.6316 | 10495462 |
@@ -451,7 +450,7 @@ Having described how to obtain $$n$$ and $$\mid v \mid$$ for each country, it is
 | CR | 5.71 | 0.5276 | 223434 |
 | BO | 2.55 | 0.5958 | 159700 |
 
-As we have seen previously, the correlation between the variables displays the relation between the coefficients; it was helpful to realize that the first version of Zipf's Law was not needed. The following table shows the correlation between $$k$$, $$\beta$$, and $$\max n$$. It is observed that $$k$$ and $$\beta$$ are uncorrelated to $$\max n$$, and that there is a negative correlation between $$k$$ and $$\beta$$. 
+كما رأينا سابقًا، يعرض الارتباط بين المتغيرات العلاقة بين المعاملات؛ كان من المفيد إدراك أن النسخة الأولى من قانون زيف لم تكن مطلوبة. يوضح الجدول التالي الارتباط بين $$k$$ و $$\beta$$ و $$\max n$$. يلاحظ أن $$k$$ و $$\beta$$ غير مرتبطين بـ $$\max n$$، وأن هناك ارتباطًا سلبيًا بين $$k$$ و $$\beta$$.
 
 |        | $$k$$ | $$\beta$$ | $$\max n$$ |
 |--------|-------|-----------|-------|
@@ -459,8 +458,8 @@ As we have seen previously, the correlation between the variables displays the r
 |$$\beta$$| -0.8643 | 1.0000 | 0.3235 |
 |$$\max n$$| 0.0587 | 0.3235 | 1.0000 |
 
-## Comparison of Spanish-speaking countries
+## مقارنة الدول الناطقة بالإسبانية (Comparison of Spanish-speaking countries)
 
-Coefficients $$\alpha$$ and $$\beta$$ characterize the vocabulary on a particular region, language, and dates. These coefficients can be used to compare the similarities between the countries. A simple approach is to create a scatter problem between $$\alpha$$ and $$\beta$$. The following figure shows the scatter plot of the Spanish-speaking countries. 
+تُميز المعاملات $$\alpha$$ و $$\beta$$ المفردات في منطقة ولغة وتواريخ معينة. وتُستخدم هذه المعاملات لمقارنة أوجه التشابه بين الدول. والنهج البسيط هو إنشاء رسم بياني مشتت بين $$\alpha$$ و $$\beta$$. يوضح الشكل التالي الرسم البياني المشتت للدول الناطقة بالإسبانية.
 
-![Spanish - $$\alpha$$, $$\beta$$](/NLP-Course/assets/images/es_alpha_beta.png)
+![Spanish - $$\alpha$$, $$\beta$$](/NLP-Course-Ar/assets/images/es_alpha_beta.png)

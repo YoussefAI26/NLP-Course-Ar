@@ -1,15 +1,15 @@
 # theme: just-the-docs
-title: Natural Language Processing
+title: معالجة اللغة الطبيعية
 email: mgraffg@ieee.org
 twitter_username: mgraffg
 github_username:  mgraffg
-baseurl: "/NLP-Course"
-# theme: minima
-remote_theme: pmarsceill/just-the-docs
-# logo: images/ingeotec.png
+baseurl: "/NLP-Course-Ar"
+theme: just-the-docs
+# remote_theme: pmarsceill/just-the-docs
+# logo: images/ingeotec.png
 
 permalink: pretty
-exclude: ["*.gemspec", "*.gem", "Gemfile", "Gemfile.lock"]
+exclude: ["*.gemspec", "*.gem", "Gemfile", "Gemfile.lock", "vendor", "just-the-docs"]
 
 # Regression tests
 # By default, the pages in /docs/tests are excluded when the ste is built.
@@ -67,9 +67,9 @@ nav_sort: case_sensitive # Capital letters sorted before lowercase
 
 # Back to top link
 back_to_top: true
-back_to_top_text: "Back to top"
+back_to_top_text: "العودة إلى الأعلى"
 
-footer_content: "Copyright &copy; 2021 Mario Graff Guerrero. Distributed by an <a href=\"https://github.com/INGEOTEC/NLP-Course/blob/main/LICENSE\">Apache License 2.0.</a>"
+footer_content: "حقوق النشر &copy; 2021 Mario Graff Guerrero. موزّع بموجب رخصة <a href=\"https://github.com/INGEOTEC/NLP-Course-Ar/blob/main/LICENSE\">Apache License 2.0.</a>"
 
 # Footer last edited timestamp
 # last_edit_timestamp: true # show or hide edit time - page must have `last_modified_date` defined in the frontmatter
@@ -79,7 +79,7 @@ footer_content: "Copyright &copy; 2021 Mario Graff Guerrero. Distributed by an <
 
 # Footer "Edit this page on GitHub" link text
 gh_edit_link: true # show or hide edit this page link
-gh_edit_link_text: "Edit this page on GitHub"
+gh_edit_link_text: "تعديل هذه الصفحة على GitHub"
 gh_edit_repository: "https://github.com/ingeotec/NLP-Course" # the github URL for your repo
 gh_edit_branch: "main" # the branch that your docs is served from
 # gh_edit_source: "" # the source that your files originate from

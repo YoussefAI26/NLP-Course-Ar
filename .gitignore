@@ -131,3 +131,9 @@ _site/
 .vscode/
 Gemfile.lock
 *.DS_Store
+vendor/
+.bundle/
+check_links.py
+check_translation.py
+fix_links.py
+check_translation.py

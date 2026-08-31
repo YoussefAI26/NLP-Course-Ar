@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Natural Language Inference
+title: الاستلزام اللغوي
 nav_order: 9
 ---
 
-# Natural Language Inference
+# الاستلزام اللغوي
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
@@ -15,5 +15,4 @@ nav_order: 9
 
 ---
 
-# Introduction
-
+# المقدمة

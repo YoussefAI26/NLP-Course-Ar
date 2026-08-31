@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Question Answering
+title: الإجابة عن الأسئلة
 nav_order: 10
 ---
 
-# Question Answering
+# الإجابة عن الأسئلة
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
@@ -15,4 +15,4 @@ nav_order: 10
 
 ---
 
-# Introduction
+# المقدمة

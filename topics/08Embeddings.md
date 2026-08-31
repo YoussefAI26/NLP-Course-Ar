@@ -1,13 +1,13 @@
 ---
 layout: default
-title: Embeddings
+title: التضمينات اللغوية
 nav_order: 8
 ---
 
-# Embeddings
+# التضمينات اللغوية
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
@@ -15,10 +15,10 @@ nav_order: 8
 
 ---
 
-# Introduction
+# المقدمة
 
-# Masked Language Model
+# نموذج اللغة المقنّع
 
-# Information Retrieval
+# استرجاع المعلومات
 
-# Word Analogies
+# المماثلات والقياسات اللفظية

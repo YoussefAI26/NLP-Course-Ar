@@ -1,19 +1,19 @@
 ---
 layout: default
-title: Text Normalization
+title: توحيد النصوص
 nav_order: 5
 ---
 
-# Text Normalization
+# توحيد النصوص
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
 
-## Libraries used
+## المكتبات المستعملة
 {: .no_toc .text-delta }
 ```python
 import numpy as np
@@ -28,7 +28,7 @@ from microtc.textmodel import SKIP_SYMBOLS
 import unicodedata
 ```
 
-## Installing external libraries
+## تثبيت المكتبات الخارجية
 {: .no_toc .text-delta }
 
 ```bash
@@ -38,25 +38,25 @@ pip install nltk
 
 ---
 
-# Introduction
+# المقدمة
 
-In all the topics covered, the assumption is that the text is well-formatted and spaces nicely surround the words (tokens). However, this is not the general case, and the spelling errors and the procedure used to define the tokens strongly impact the algorithm's performance. Consequently, this part of the course is devoted to presenting standard techniques used to normalize the text and to transform the text into tokens. 
+في جميع المواضيع التي تم تغطيتها، يفترض الخوارزمية أن النص منسق جيدًا وأن المسافات تفصل بين الكلمات (الرموز Tokens) بشكل صحيح. ومع ذلك، ليست هذه هي الحالة العامة، وتؤثر الأخطاء الإملائية والإجراءات المستخدمة لتعريف الرموز بشكل قوي على أداء الخوارزمية. وبالتالي، يُخصص هذا الجزء من المساق لتقديم التقنيات القياسية المستخدمة لتوحيد النصوص (Text Normalization) وتحويل النص إلى رموز.
 
-The text normalization described are mainly the ones used in the following research words:
+تعد معالجة توحيد النصوص الموصوفة هنا هي الرئيسية المستخدمة في الأبحاث التالية:
 
 1. [An automated text categorization framework based on hyperparameter optimization](https://www.sciencedirect.com/science/article/pii/S0950705118301217)
 2. [A simple approach to multilingual polarity classification in Twitter](https://www.sciencedirect.com/science/article/abs/pii/S0167865517301721)
 3. [A case study of Spanish text transformations for twitter sentiment analysis](https://www.sciencedirect.com/science/article/abs/pii/S0957417417302312)
 
-# Entity
+# الكيانات (Entities)
 
-The journey of text normalization starts with handling different entities within a text; the entities could be the mentioned of a user in a tweet, the numbers, or the URL, to mention a few. The actions performed to the entities found are to delete them or replace them for a particular token. 
+تبدأ رحلة توحيد النصوص بالتعامل مع الكيانات المختلفة داخل النص؛ قد تكون الكيانات إشارة إلى مستخدم في تغريدة، أو أرقام، أو روابط URL، على سبيل المثال لا الحصر. الإجراءات المتخذة على الكيانات الموجودة هي حذفها أو استبدالها برمز خاص.
 
-## Users
+## أسماء المستخدمين (Users)
 
-The first process is to deal with username following the format of Twitter. In a tweet, the mention of a user is identified with a string starting with the character @. The two actions could be to delete all the users' mentions or change them for a common label.
+تتمثل العملية الأولى في التعامل مع اسم المستخدم باتباع تنسيق تويتر. في التغريدة، يتم التعرف على الإشارة إلى المستخدم بسلسلة نصية تبدأ بالمحرف @. يمكن أن يكون الإجراءان هما حذف جميع الإشارات للمستخدمين أو تغييرها إلى وسم موحد.
 
-The procedure uses regular expressions to find the entities; for example, the following code can remove the users' mentions.
+يستخدم الإجراء التعبيرات النمطية (Regular Expressions) للعثور على الكيانات؛ على سبيل المثال، يمكن للكود التالي إزالة الإشارات للمستخدمين.
 
 ```python
 text = 'Hi @xx, @mm is talking about you.'
@@ -64,7 +64,7 @@ re.sub(r"@\S+", "", text)
 'Hi   is talking about you.'
 ```
 
-On the other hand, to replace the username with a shared label can be implemented with the following code, where the label is `_usr`
+من ناحية أخرى، يمكن تنفيذ استبدال اسم المستخدم بوسم مشترك بالكود التالي، حيث الوسم هو `_usr`
 
 ```python
 text = 'Hi @xx, @mm is talking about you.'
@@ -72,9 +72,9 @@ re.sub(r"@\S+", "_usr", text)
 'Hi _usr _usr is talking about you.'
 ```
 
-## URL
+## الروابط (URL)
 
-The previous code can be adapted to handle URL; one only needs to define the regular expression to use; see the following code that removes all the appearances of the URL. 
+يمكن تكييف الكود السابق للتعامل مع روابط URL؛ يحتاج المرء فقط إلى تعريف التعبير النمطي المراد استخدامه؛ انظر الكود التالي الذي يزيل جميع ظواهر URL.
 
 ```python
 text = "go http://google.com, and find out"
@@ -82,9 +82,9 @@ re.sub(r"https?://\S+", "", text)
 'go  and find out'
 ```
 
-## Numbers
+## الأرقام (Numbers)
 
-The previous code can be modified to deal with numbers and replace the number found with a shared label such as `_num`.
+يمكن تعديل الكود السابق للتعامل مع الأرقام واستبدال الرقم الموجود بوسم مشترك مثل `_num`.
 
 ```python
 text = "we have won 10 M"
@@ -92,13 +92,13 @@ re.sub(r"\d\d*\.?\d*|\d*\.\d\d*", "_num", text)
 'we have won _num M'
 ```
 
-# Spelling
+# الإملاء والهجاء (Spelling)
 
-The next block of text normalization modifies the writing of the text, removing components that, for particular applications, can be ignored to reduce the vocabulary size, which impacts the complexity of the algorithm and could be reflected in an improvement in the performance.  
+تعدل الكتلة التالية من توحيد النصوص كتابة النص، حيث تزيل المكونات التي يمكن لبعض التطبيقات تجاهلها لتقليل حجم المفردات، مما يؤثر على تعقيد الخوارزمية ويمكن أن ينعكس في تحسين الأداء.
 
-## Case sensitive
+## حساسية حالة الأحرف (Case Sensitive)
 
-The first of these transformations is the conversion to lower case; transforming all the words to the lower case has the consequence that the vocabulary is reduced, e.g., the word Mexico and mexico would be considered the same token. This operation can be implemented with function `lower` as follows.
+أول هذه التحويلات هو التحويل إلى أحرف صغيرة (Lower Case)؛ تحويل جميع الكلمات إلى أحرف صغيرة له نتيجة تقليل المفردات، على سبيل المثال، الكلمتان Mexico و mexico تعتبران نفس الرمز. يمكن تنفيذ هذه العملية باستخدام الدالة `lower` كما يلي.
 
 ```python
 text = "Mexico"
@@ -106,11 +106,11 @@ text.lower()
 'mexico'
 ```
 
-## Punctuation
+## علامات الترقيم (Punctuation)
 
-The punctuation symbols are essential to natural language understanding and generation; however, for other applications, such as sentiment analysis or text categorization, its contribution is opaque by the increase in the vocabulary size. Consequently, its removal influences the vocabulary size, which sometimes has a positive result on the performance.
+رموز الترقيم أساسية لفهم اللغة الطبيعية وتوليدها؛ ومع ذلك، بالنسبة للتطبيقات الأخرى، مثل تحليل المشاعر (Sentiment Analysis) أو تصنيف النصوص، فإن المساهمة تكون غير واضحة بسبب الزيادة في حجم المفردات. وبالتالي، فإن إزالتها تؤثر على حجم المفردات، مما ينتج عنه أحيانًا نتيجة إيجابية في الأداء.
 
-These symbols can be removed by traversing the string and skipping the punctuations.
+يمكن إزالة هذه الرموز بالمرور عبر السلسلة النصية وتخطي علامات الترقيم.
 
 ```python
 text = "Hi! good morning,"
@@ -123,9 +123,9 @@ output
 'Hi good morning'
 ```
 
-## Diacritic
+## التشكيل والحركات (Diacritics)
 
-Different languages use diacritic symbols, e.g., México; as expected, this has the consequence of increasing the vocabulary. On the other hand, in informal writing, the misuse of diacritic symbols is common; one particular way to handle this problem is to remove the diacritic symbols and treat them as the same word, e.g., México would be replaced by Mexico. 
+تستخدم اللغات المختلفة رموز تشكيل/حركات، على سبيل المثال، México؛ وكما هو متوقع، فإن هذا يؤدي إلى زيادة المفردات. من ناحية أخرى، في الكتابة غير الرسمية، يكثر الاستخدام الخاطئ لرموز التشكيل؛ وإحدى الطرق المحددة للتعامل مع هذه المشكلة هي إزالة رموز التشكيل ومعاملتها بنفس الكلمة، على سبيل المثال، سيتم استبدال México بـ Mexico.
 
 ```python
 text = 'México'
@@ -139,15 +139,15 @@ output
 'Mexico'
 ```
 
-# Semantic Normalizations
+# التوحيد الدلالي (Semantic Normalizations)
 
-The next set of normalization techniques aims to reduce the vocabulary size using the meaning of the words to modify them or remove them from the text.
+تهدف المجموعة التالية من تقنيات التوحيد إلى تقليل حجم المفردات باستخدام معنى الكلمات لتعديلها أو إزالتها من النص.
 
-## Stop words
+## كلمات التوقف (Stop words)
 
-The stop words are the most frequent words used in the language. These words are essential to communicate but are not so much on tasks where the aim is to discriminate texts according to their meaning. 
+كلمات التوقف هي الكلمات الأكثر تكرارًا في اللغة. هذه الكلمات أساسية للتواصل ولكنها ليست ذات أهمية كبيرة في المهام التي تهدف إلى التمييز بين النصوص وفقًا لمعناها.
 
-The stop words can be stored in a dictionary, and then the process of removing them consists of traversing all the tokens from a text and then removing those in the dictionary. The process is exemplified with the following code.
+يمكن تخزين كلمات التوقف في قاموس، ثم تتكون عملية إزالتها من المرور على جميع الرموز من النص وإزالة تلك الموجودة في القاموس. وتتم العملية مع إعطاء مثال بالكود التالي.
 
 ```python
 lang = LangDependency('english')
@@ -163,11 +163,11 @@ output
 'Good morning! Today, warm weather.'
 ```
 
-## Stemmming and Lemmatization
+## التجذير والترديد إلى الأصل (Stemming and Lemmatization)
 
-The idea of stemming and lemmatization, seen as a normalization process, is to group different words based on their root; for example, the process would associate words like *playing*, *player*, *plays* with the token *play*.
+فكرة التجذير (Stemming) والترديد إلى الأصل (Lemmatization)، كعملية توحيد، هي تجميع كلمات مختلفة بناءً على جذرها؛ على سبيل المثال، تربط العملية كلمات مثل *playing* و *player* و *plays* بالرمز *play*.
 
-Stemming treats the problem with fewer constraints than lemmatization, having as a consequence that the common word found cannot be the common root of the words; additionally, the algorithms do not consider the role of the word being processed in the sentence. On the other hand, a lemmatization algorithm obtains the root of the word considering the part of the speech of the processed word.
+يعالج التجذير المشكلة بفيود أقل من الترديد/الرد إلى الأصل، مما يتسبب في أن الكلمة الشائعة المكتشفة قد لا تكون الجذر اللغوي للكلمات؛ بالإضافة إلى ذلك، لا تأخذ الخوارزميات في الاعتبار دور الكلمة التي تتم معالجتها في الجملة. من ناحية أخرى، تحصل خوارزمية الترديد/الرد إلى الأصل على جذر الكلمة مع مراعاة جزء الكلام (Part of Speech) للكلمة المعالجة.
 
 ```python
 stemmer = PorterStemmer()
@@ -182,13 +182,13 @@ output
 'i like play footbal'
 ```
 
-# Tokenization
+# التقطيع والتحليل اللفظي (Tokenization)
 
-Once the text has been normalized, it is time to transform it into its fundamental elements, which could be words, bigrams, n-grams, substrings, or a combination of them; this process is known as tokenization. Different methods can be applied to tokenize a text, the one used is so far is to transform a text into a list of words where the word is surrounded by space or non-printable characters. The decision of which tokenizer to use depends on the application; for example, in order to generate text, it is crucial to learn the punctuation symbols, so these symbols are tokens. On the other hand, in the text categorization problem, where the task is to classify a text, it might be irrelevant to keep the order of the words. 
+بمجرد توحيد النص، حان الوقت لتحويله إلى عناصره الأساسية، والتي يمكن أن تكون كلمات، أو ثنائيات كلمات، أو n-grams، أو سلاسل فرعية، أو مدمجًا بينها؛ وتُعرف هذه العملية باسم التقطيع (Tokenization). يمكن تطبيق طرق مختلفة لتقطيع النص، والطريقة المستخدمة حتى الآن هي تحويل النص إلى قائمة كلمات حيث تفصل الكلمات مسافة أو محارف غير قابلة للطباعة. يعتمد القرار بشأن المحلل اللفظي الذي يجب استخدامه على التطبيق؛ على سبيل المثال، من أجل توليد النص، من المهم تعلم رموز الترقيم، وبالتالي فإن هذه الرموز تعتبر رموزًا مستقلة. من ناحية أخرى، في مسألة تصنيف النصوص، حيث تكون المهمة هي تصنيف النص، قد يكون من غير المهم الحفاظ على ترتيب الكلمات.
 
-## n-grams
+## متواليات الكلمات (n-grams)
 
-The first tokenizer review corresponds to transforming the text into words, bigrams, and in general, n-grams. The case of words is straightforward using the function `split`; once the words have been obtained, these can be combined to form an n-gram of any size, as shown below. 
+تتوافق مراجعة المحلل اللفظي الأول مع تحويل النص إلى كلمات وثنائيات كلمات وبشكل عام n-grams. تكون حالة الكلمات مباشرة باستخدام الدالة `split`؛ وبمجرد الحصول على الكلمات، يمكن دمجها لتشكيل n-gram بأي حجم، كما هو موضح أدناه.
 
 ```python
 text = 'I like playing football on Saturday'
@@ -202,11 +202,11 @@ n_grams
  'playing~football~on', 'football~on~Saturday']
 ```
 
-## q-grams
+## متواليات المحارف (q-grams)
 
-The q-gram tokenizer complements the n-grams one; it is defined as the substring of length $$q$$. The q-grams have two relevant features; the first one is that they are language agnostic consequently can be applied to any language, and the second is that they tackle the misspelling problem from an approximate matching perspective.  
+يكمل المحلل اللفظي q-gram ميزات n-grams؛ ويُعرف بالسلسلة النصية الفرعية ذات الطول $$q$$. تتمتع q-grams بميزتين هامتين؛ الأولى هي أنها مستقلة عن اللغة وبالتالي يمكن تطبيقها على أي لغة، والثانية هي أنها تعالج مشكلة الأخطاء الإملائية من منظور المطابقة التقريبية.
 
-The code is equivalent to the one used to compute n-grams, being the difference that the iteration is on characters instead of words.
+الكود يعادل الكود المستخدم لحساب n-grams، مع وجود الفارق في أن التكرار يكون على الأحرف بدلاً من الكلمات.
 
 ```python
 text = 'I like playing'
@@ -219,38 +219,38 @@ q_grams
  ' pla', 'play', 'layi', 'ayin', 'ying']
 ```
 
-# TextModel
+# نمذجة النصوص (TextModel)
 
-The class `TextModel` of the library [B4MSA](https://b4msa.readthedocs.io/en/latest/) contains the text normalization and tokenizers described and can be used as follows. 
+تحتوي الفئة `TextModel` في مكتبة [B4MSA](https://b4msa.readthedocs.io/en/latest/) على توحيد النصوص والمحللات اللفظية الموصوفة ويمكن استخدامها كما يلي.
 
-The first step is to instantiate the class given the desired parameters. The [Entity](#entity) parameters have three options to delete (`OPTION_DELETE`) the entity, replace (`OPTION_GROUP`) it with a predefined token, or do not apply that operation (`OPTION_NONE`). These parameters are:
+الخطوة الأولى هي إنشاء مثيل من الفئة بالنظر إلى المعلمات المطلوبة. تحتوي معلمات [الكيانات](#entity) على ثلاثة خيارات للحذف (`OPTION_DELETE`) للكيان، أو الاستبدال (`OPTION_GROUP`) برمز محدد سابقًا، أو عدم تطبيق هذه العملية (`OPTION_NONE`). هذه المعلمات هي:
 
 * usr_option
 * url_option
 * num_option
 
-The class has three additional transformation which are:
+تحتوي الفئة على ثلاثة تحويلات إضافية وهي:
 
 * emo_option
 * hashtag_option
 * ent_option
 
-The [Spelling](#spelling) transformations can be triggered with the following keywords:
+يمكن تشغيل تحويلات [الإملاء والهجاء](#spelling) بالكلمات المفتاحية التالية:
 
 * lc 
 * del_punc
 * del_diac
 
-which corresponds to lower case, punctuation, and diacritic.
+والتي تتوافق مع حالة الأحرف الصغيرة، وعلامات الترقيم، والتشكيل.
 
-The [Semantic](#semantic-normalizations) normalizations are set up with the parameters:
+يتم إعداد التوحيد [الدلالي](#semantic-normalizations) بالمعلمات:
 
 * stopwords
 * stemming
 
-Finally, the tokenizer is configured with the `token_list` parameter, which has the following format; negative numbers indicate $$n$$-grams and positive numbers $$q$$-grams.
+أخيرًا، يتم تكوين المحلل اللفظي بـ المعلمة `token_list` التي تأخذ التنسيق التالي؛ تشير الأرقام السالبة إلى $$n$$-grams والأرقام الموجبة إلى $$q$$-grams.
 
-For example, the following code invokes the text normalization algorithm; the only difference is that spaces are replaced with `~`.
+على سبيل المثال، يدعو الكود التالي خوارزمية توحيد النص؛ الفارق الوحيد هو استبدال المسافات بـ `~`.
 
 ```python
 text = 'I like playing football with @mgraffg'
@@ -261,7 +261,7 @@ tm.text_transformations(text)
 '~i~like~play~fotbal~with~_usr~'
 ```
 
-On the other hand, the tokenizer is used as follows.
+من ناحية أخرى، يُستخدم المحلل اللفظي كما يلي.
 
 ```python
 text = 'I like playing football with @mgraffg'
@@ -276,7 +276,6 @@ tm.tokenize(text)
  'q:tbal~', 'q:bal~w', 'q:al~wi', 'q:l~wit', 'q:~with',
  'q:with~', 'q:ith~_', 'q:th~_u', 'q:h~_us', 'q:~_usr',
  'q:_usr~']
- ```
+```
 
- It can be observed that all $$q$$-grams start with the prefix *q:*.
-
+ يمكن ملاحظة أن جميع $$q$$-grams تبدأ بالبادئة *q:*.

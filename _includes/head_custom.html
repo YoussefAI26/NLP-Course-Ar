@@ -1,0 +1,290 @@
+<style>
+  /* ===== RTL Base Direction ===== */
+  html, body {
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* ===== Preserve LTR for code, math, tables ===== */
+  pre, code, .highlight,
+  .MathJax_Display, .MathJax,
+  .language-python, .language-bash, .language-ruby {
+    direction: ltr !important;
+    text-align: left !important;
+    unicode-bidi: embed;
+  }
+
+  table {
+    direction: ltr;
+    text-align: left;
+  }
+
+  /* ===== Blockquote: border on right for RTL ===== */
+  blockquote {
+    border-left: none !important;
+    border-right: 3px solid #e8e8e8;
+    padding-right: 1rem;
+    padding-left: 0;
+  }
+
+  /* ===== Search ===== */
+  .search-input {
+    text-align: right;
+    direction: rtl;
+  }
+
+
+  /* ===== AI Toolbar ===== */
+  .ai-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1.2rem;
+    direction: rtl;
+    position: relative;
+  }
+
+  .ai-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .ai-toolbar-btn:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+  }
+
+  .ai-toolbar-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .ai-toolbar-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1px solid #7c3aed;
+    border-radius: 8px;
+    background: #7c3aed;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+  .ai-toolbar-toggle:hover {
+    background: #6d28d9;
+    border-color: #6d28d9;
+  }
+
+  .ai-toolbar-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 240px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    z-index: 100;
+    overflow: hidden;
+    direction: rtl;
+  }
+  .ai-toolbar-menu.open {
+    display: block;
+  }
+
+  .ai-toolbar-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: right;
+    font-family: inherit;
+  }
+  .ai-toolbar-menu-item:hover {
+    background: #f1f5f9;
+  }
+  .ai-toolbar-menu-item .item-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .ai-toolbar-menu-item .item-label {
+    font-weight: 500;
+  }
+  .ai-toolbar-menu-item .item-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+  .ai-toolbar-menu-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 0;
+  }
+
+  /* Toast notification */
+  .ai-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: #059669;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(5,150,105,0.4);
+    z-index: 10000;
+    transition: transform 0.3s ease;
+    font-family: inherit;
+  }
+  .ai-toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // --- Find main content area ---
+  var mainContent = document.querySelector('.main-content');
+  if (!mainContent) return;
+
+  // --- Create toolbar HTML ---
+  var toolbar = document.createElement('div');
+  toolbar.className = 'ai-toolbar';
+  toolbar.innerHTML = 
+    '<div class="ai-toolbar-dropdown">' +
+      '<button class="ai-toolbar-toggle" id="ai-toggle">' +
+        '📋 نسخ المحتوى ▾' +
+      '</button>' +
+      '<div class="ai-toolbar-menu" id="ai-menu">' +
+        '<button class="ai-toolbar-menu-item" id="copy-text">' +
+          '<span class="item-icon">📄</span>' +
+          '<div><div class="item-label">نسخ كنص عادي</div>' +
+          '<div class="item-desc">نص بدون تنسيق</div></div>' +
+        '</button>' +
+        '<div class="ai-toolbar-menu-divider"></div>' +
+        '<button class="ai-toolbar-menu-item" id="copy-md">' +
+          '<span class="item-icon">📝</span>' +
+          '<div><div class="item-label">نسخ كـ Markdown</div>' +
+          '<div class="item-desc">نص مع تنسيق Markdown</div></div>' +
+        '</button>' +
+        '<div class="ai-toolbar-menu-divider"></div>' +
+        '<button class="ai-toolbar-menu-item" id="send-chatgpt">' +
+          '<span class="item-icon">🤖</span>' +
+          '<div><div class="item-label">إرسال إلى ChatGPT</div>' +
+          '<div class="item-desc">فتح ChatGPT مع المحتوى</div></div>' +
+        '</button>' +
+      '</div>' +
+    '</div>';
+
+  // Insert toolbar before the first child of main-content
+  mainContent.insertBefore(toolbar, mainContent.firstChild);
+
+  // --- Toast ---
+  var toast = document.createElement('div');
+  toast.className = 'ai-toast';
+  toast.id = 'ai-toast';
+  document.body.appendChild(toast);
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2000);
+  }
+
+  // --- Toggle dropdown ---
+  var toggle = document.getElementById('ai-toggle');
+  var menu = document.getElementById('ai-menu');
+
+  toggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    menu.classList.toggle('open');
+  });
+
+  document.addEventListener('click', function() {
+    menu.classList.remove('open');
+  });
+
+  // --- Get page markdown source path ---
+  function getPageMarkdown() {
+    // Get inner text as fallback
+    return mainContent.innerText;
+  }
+
+  function getPageMarkdownSource() {
+    // Try to get the raw markdown from the page path
+    var path = window.location.pathname;
+    // Convert /NLP-Course-Ar/topics/03Collocations/ to the .md source
+    // We just use innerText with headers preserved
+    var text = '';
+    var nodes = mainContent.querySelectorAll('h1, h2, h3, h4, h5, h6, p, pre, li, table, blockquote, img');
+    nodes.forEach(function(node) {
+      var tag = node.tagName.toLowerCase();
+      if (tag === 'h1') text += '# ' + node.textContent.trim() + '\n\n';
+      else if (tag === 'h2') text += '## ' + node.textContent.trim() + '\n\n';
+      else if (tag === 'h3') text += '### ' + node.textContent.trim() + '\n\n';
+      else if (tag === 'h4') text += '#### ' + node.textContent.trim() + '\n\n';
+      else if (tag === 'h5') text += '##### ' + node.textContent.trim() + '\n\n';
+      else if (tag === 'h6') text += '###### ' + node.textContent.trim() + '\n\n';
+      else if (tag === 'pre') text += '```\n' + node.textContent + '\n```\n\n';
+      else if (tag === 'li') text += '- ' + node.textContent.trim() + '\n';
+      else if (tag === 'img') text += '![' + (node.alt || '') + '](' + node.src + ')\n\n';
+      else if (tag === 'blockquote') text += '> ' + node.textContent.trim() + '\n\n';
+      else if (tag === 'p') text += node.textContent.trim() + '\n\n';
+      else if (tag === 'table') text += node.outerHTML + '\n\n';
+    });
+    return text;
+  }
+
+  // --- Copy as plain text ---
+  document.getElementById('copy-text').addEventListener('click', function() {
+    navigator.clipboard.writeText(mainContent.innerText).then(function() {
+      showToast('✅ تم نسخ النص بنجاح!');
+      menu.classList.remove('open');
+    });
+  });
+
+  // --- Copy as Markdown ---
+  document.getElementById('copy-md').addEventListener('click', function() {
+    var md = getPageMarkdownSource();
+    navigator.clipboard.writeText(md).then(function() {
+      showToast('✅ تم نسخ Markdown بنجاح!');
+      menu.classList.remove('open');
+    });
+  });
+
+  // --- Send to ChatGPT ---
+  document.getElementById('send-chatgpt').addEventListener('click', function() {
+    var text = mainContent.innerText;
+    // Truncate if too long for URL
+    var prompt = 'اشرح لي المحتوى التالي بالعربية:\n\n' + text.substring(0, 6000);
+    var url = 'https://chat.openai.com/?q=' + encodeURIComponent(prompt);
+    window.open(url, '_blank');
+    menu.classList.remove('open');
+    showToast('🤖 جاري فتح ChatGPT...');
+  });
+});
+</script>

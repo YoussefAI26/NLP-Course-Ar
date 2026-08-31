@@ -1,0 +1,32 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  cooldown:
+    default-days: 7
+  open-pull-requests-limit: 10
+  groups:
+   stylelint:
+      patterns: ["stylelint", "stylelint*"]
+- package-ecosystem: bundler
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  cooldown:
+    default-days: 7
+  open-pull-requests-limit: 10
+  groups:
+    axe-core:
+      patterns: ["axe-core*"]
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  cooldown:
+    default-days: 7
+  open-pull-requests-limit: 10

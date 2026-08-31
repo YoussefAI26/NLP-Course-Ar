@@ -1,19 +1,19 @@
 ---
 layout: default
-title: N-Gram Language Model
+title: نموذج اللغة N-Gram
 nav_order: 4
 ---
 
-# N-Gram Language Model
+# نموذج اللغة N-Gram
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
 
-## Libraries used
+## المكتبات المستعملة
 {: .no_toc .text-delta }
 ```python
 import numpy as np
@@ -24,7 +24,7 @@ from collections import Counter, defaultdict
 from wordcloud import WordCloud as WC
 ```
 
-## Installing external libraries
+## تثبيت المكتبات الخارجية
 {: .no_toc .text-delta }
 
 ```bash
@@ -35,22 +35,22 @@ pip install text_models
 
 ---
 
-# Introduction
+# المقدمة
 
-A Language Model (LM) assigns probabilities to words (tokens), sentences, or documents. The direct usage of an LM is to estimate the probability of observing a particular text, it can also be used to generate texts, and in general, it models the dynamics of a language. It is essential to mention that most of the **Natural Language Understanding** (NLU) tasks rely on an LM.
+يخصص نموذج اللغة (Language Model - LM) احتمالات للكلمات (الرموز Tokens)، أو الجمل، أو المستندات. الاستخدام المباشر لـ LM هو تقدير احتمال ملاحظة نص معين، ويمكن استخدامه أيضًا لتوليد النصوص، وبشكل عام، فإنه ينمذج ديناميكيات اللغة. ومن المهم الإشارة إلى أن معظم مهام **فهم اللغة الطبيعية** (Natural Language Understanding - NLU) تعتمد على نموذج اللغة (LM).
 
-LM deals with modeling the multivariate probability $$\mathbb P(\mathcal X_1, \mathcal X_2, \ldots, \mathcal X_\ell)$$ of observing $$\ell$$ words (tokens).  As expected, these $$\ell$$ random variables are dependent (see the definition of the complement concept, i.e., [independence](/NLP-Course/topics/03Collocations/#sec:independence-marginal).), and in order to work with them, it is needed to define the concept of conditional probability. 
-  
-# Conditional Probability
+يتعامل نموذج اللغة مع نمذجة الاحتمال متعدد المتغيرات $$\mathbb P(\mathcal X_1, \mathcal X_2, \ldots, \mathcal X_\ell)$$ لملاحظة $$\ell$$ من الكلمات (الرموز). وكما هو متوقع، فإن هذه المتغيرات العشوائية $$\ell$$ تعتمد على بعضها البعض (انظر تعريف المفهوم المكمل، أي [الاستقلالية](/NLP-Course-Ar/topics/03Collocations.html#sec:independence-marginal).)، وللعمل معها، يلزم تعريف مفهوم الاحتمال الشرطي.
+
+# الاحتمال الشرطي (Conditional Probability)
 {: #sec:conditional-probability }
 
-The conditional probability of two random variables $$\mathcal X$$ and $$\mathcal Y$$ is defined as:
+يُعرّف الاحتمال الشرطي لمتغيرين عشوائيين $$\mathcal X$$ و $$\mathcal Y$$ كـ:
 
 $$\mathbb P(\mathcal Y \mid \mathcal X) = \frac{\mathbb P(\mathcal X, \mathcal Y)}{\mathbb P(\mathcal X)},$$
 
-if $$\mathbb P(\mathcal X) > 0.$$
+إذا كان $$\mathbb P(\mathcal X) > 0.$$
 
-The definition allows defining $$\mathbb P(\mathcal X, \mathcal Y) = \mathbb P(\mathcal Y \mid \mathcal X) \mathbb P(\mathcal X),$$ which is helpful for two words text. The general case involves $$\ell$$ words, which can be defined using the probability chain rule.
+يسمح التعريف بتحديد $$\mathbb P(\mathcal X, \mathcal Y) = \mathbb P(\mathcal Y \mid \mathcal X) \mathbb P(\mathcal X)،$$ وهو أمر مفيد للنصوص المكونة من كلمتين. وتتضمن الحالة العامة $$\ell$$ من الكلمات، والتي يمكن تعريفها باستخدام قاعدة السلسلة للاحتمالات (Probability chain rule).
 
 $$\begin{eqnarray}
 \mathbb P(\mathcal X_1, \ldots, \mathcal X_\ell) &=& \mathbb P(\mathcal X_\ell \mid \mathcal X_1, \ldots, \mathcal X_{\ell -1}) \mathbb P(\mathcal X_1, \ldots, \mathcal X_{\ell - 1})\\ 
@@ -59,34 +59,34 @@ $$\begin{eqnarray}
 \mathbb P(\mathcal X_1, \mathcal X_2) &=& \mathbb P(\mathcal X_2 \mid \mathcal X_1) \mathbb P(\mathcal X_1)
 \end{eqnarray}.$$
 
-The first equality of the previous system of equation shows an exciting characteristic; it computes the probability of the next word, $$\ell$$, given a history of $$\ell -1 $$ words; that is
+تظهر المساواة الأولى في نظام المعادلة السابق خاصية مثيرة؛ حيث تحسب احتمال الكلمة التالية، $$\ell$$، بالنظر إلى تاريخ مكون من $$\ell -1 $$ من الكلمات؛ أي:
 
 $$\mathbb P(\mathcal X_\ell \mid \mathcal X_1, \ldots, \mathcal X_{\ell -1}) = \frac{\mathbb P(\mathcal X_1, \ldots, \mathcal X_\ell)}{\mathbb P(\mathcal X_1, \ldots, \mathcal X_{\ell - 1})},$$ 
 
-where $$\mathbb P(\mathcal X_1, \ldots, \mathcal X_{\ell - 1}) = \sum_x \mathbb P(\mathcal X_1, \ldots, \mathcal X_{\ell - 1}, \mathcal X_\ell = x)$$ is the marginal distribution. 
+حيث $$\mathbb P(\mathcal X_1, \ldots, \mathcal X_{\ell - 1}) = \sum_x \mathbb P(\mathcal X_1, \ldots, \mathcal X_{\ell - 1}, \mathcal X_\ell = x)$$ هو التوزيع الهامشي (Marginal distribution).
 
-# N-Gram Language Model
+# نموذج اللغة N-Gram (N-Gram Language Model)
 
-Traditionally, the multivariate probability distributions are fixed with respect to the number of variables; however, the number of words in a sentence or a document is variable. Nonetheless, the dependency between the latest word and the first one on a long text is negligible. 
+تقليديًا، تكون التوزيعات الاحتمالية متعددة المتغيرات ثابتة فيما يتعلق بعدد المتغيرات؛ ومع ذلك، فإن عدد الكلمات في الجملة أو المستند متغير. ومع ذلك، فإن التبعية بين الكلمة الأخيرة والكلمة الأولى في نص طويل تكون مهملة.
 
-Even when the number of variables is constant, that is, $$\ell$$ is kept constant in the model, which has as a consequence that it is not possible to represent a text longer than $$\ell$$ words. There is still another concern that comes from estimating the parameters of the multivariate distribution. $$\mathcal X$$ is Categorical distributed with $$d$$ possible outcomes. The minimum number of examples needed to observe the $$d$$ outcomes is $$d^1$$; in the case of two variables, i.e., $$\ell=2$$, it is needed at least $$d^2$$, and in general, for $$\ell$$ variables it is needed $$d^\ell$$ examples. 
+حتى عندما يكون عدد المتغيرات ثابتًا، أي يتم الإبقاء على $$\ell$$ ثابتًا في النموذج، فإن النتيجة هي أنه لا يمكن تمثيل نص أطول من $$\ell$$ كلمة. وهناك قلق آخر يأتي من تقدير معلمات التوزيع متعدد المتغيرات. حيث يتبع $$\mathcal X$$ توزيعًا فئويًا (Categorical distribution) مع $$d$$ من المخرجات الممكنة. الحد الأدنى لعدد الأمثلة المطلوبة لملاحظة مخرجات $$d$$ هو $$d^1$$؛ وفي حالة متغيرين، أي $$\ell=2$$، يلزم على الأقل $$d^2$$، وبشكل عام، لـ $$\ell$$ من المتغيرات يلزم $$d^\ell$$ من الأمثلة.
 
-The consequence is that for a relatively small $$\ell$$, one needs a vast dataset to have enough information to estimate the multivariate distribution. We have seen this behavior in the [co-occurrence matrix](/NLP-Course/topics/03Collocations/#tab:co-occurrence) where most matrix elements are zero; only $$0.021$$% of the matrix is different from zero. 
+والنتيجة هي أنه بالنسبة لـ $$\ell$$ صغيرة نسبياً، يحتاج المرء إلى مجموعة بيانات ضخمة للحصول على معلومات كافية لتقدير التوزيع متعدد المتغيرات. لقد رأينا هذا السلوك في [مصفوفة التوارد](/NLP-Course-Ar/topics/03Collocations.html#tab:co-occurrence) حيث معظم عناصر المصفوفة أصفار؛ فقط $$0.021$$% من المصفوفة يختلف عن الصفر.
 
-The constraints mentioned above can be handled by approximating the conditional probability of the following word. Instead of using $$\ell - 1$$ words to measure the probability of obtaining word $$\ell$$, the history is fixed to only include the latest $$n$$ words, namely
+يمكن التعامل مع القيود المذكورة أعلاه عن طريق التقريب للاحتمال الشرطي للكلمة التالية. بدلاً من استخدام $$\ell - 1$$ كلمة لقياس احتمال الحصول على الكلمة $$\ell$$، يتم تثبيت السجل/التاريخ ليشمل فقط آخر $$n$$ كلمات، أي:
 
 $$\mathbb P(\mathcal X_\ell \mid \mathcal X_1, \ldots, \mathcal X_{\ell -1}) \approx \mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - n + 1}, \ldots, \mathcal X_{\ell -1}).$$ 
 
 
-# Bigrams 
+# ثنائيات الكلمات (Bigrams)
 
-The n-gram LM for $$n-2$$ is known as bigram, and its formulation is $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell-1}).$$ We have been working extensively with bigrams, albeit in a different direction: [finding collocations](/NLP-Course/topics/03Collocations). In addition, the dataset obtained from the library `text_models` does not follow the definition of LM bigrams; an LM bigram uses as input two words (tokens) that are consecutive. Conversely, the two words in `text_models` models did not have an order and were the composition of all the pairs in each tweet. 
+يُعرف نموذج n-gram لـ $$n=2$$ باسم ثنائي الكلمات (Bigram)، وصياغته هي $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell-1}).$$ لقد عملنا بشكل مكثف مع ثنائيات الكلمات، وإن كان ذلك في اتجاه مختلف: [البحث عن المتلازمات اللفظية](/NLP-Course-Ar/topics/03Collocations.html). بالإضافة إلى ذلك، فإن مجموعة البيانات التي تم الحصول عليها من مكتبة `text_models` لا تتبع تعريف Bigrams الخاص بنماذج اللغة؛ حيث يستخدم LM bigram كلمتين متتاليتين كمدخلات. وعلى العكس من ذلك، فإن الكلمتين في نماذج `text_models` لم يكن لهما ترتيب وكانا عبارة عن تركيب لجميع الأزواج في كل تغريدة.
 
-The bigram model is defined as:
+يُعرّف نموذج Bigram كـ:
 
 $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - 1}) = \frac{\mathbb P(\mathcal X_{\ell -1}, \mathcal X_\ell)}{\mathbb P(\mathcal X_{\ell - 1})}.$$
 
-The procedure to estimate the values of $$\mathbb P(\mathcal X_{\ell -1}, \mathcal X_\ell)$$ and $$\mathbb P(\mathcal X_{\ell - 1})$$ have been described [previously.](/NLP-Course/topics/03Collocations/#sec:bivariate-distribution) The example seen was a pair of dices where a dependency between $$\mathcal X_r=2$$ and $$\mathcal X_c=1$$ is wired. This example can be modified to link it closely to a bigram LM by assuming that there is a language with only four words, represented by $$\{0, 1, 2, 3\}$$. These words are used to compose bigrams following a Categorical distribution, where the process generating this bivariate distribution is the following.
+تم وصف إجراء تقدير قيم $$\mathbb P(\mathcal X_{\ell -1}, \mathcal X_\ell)$$ و $$\mathbb P(\mathcal X_{\ell - 1})$$ [سابقًا.](/NLP-Course-Ar/topics/03Collocations.html#sec:bivariate-distribution) وكان المثال الذي شوهد عبارة عن زوج من النرد حيث توجد تبعية بين $$\mathcal X_r=2$$ و $$\mathcal X_c=1$$. يمكن تعديل هذا المثال لربطه عن كثب بـ bigram LM بافتراض أن هناك لغة تحتوي فقط على أربع كلمات، متمثلة بـ $$\{0, 1, 2, 3\}$$. تُستخدم هذه الكلمات لتكوين ثنائيات كلمات تتبع توزيعًا فئويًا، حيث يكون الإجراء الذي يولد هذا التوزيع ثنائي المتغير هو التالي.
 
 ```python
 d = 4
@@ -98,9 +98,9 @@ Z = [[r, 2 if r == 1 and rand() < 0.1 else c]
      if r != c or (r == c and rand() < 0.2)]
 ```
 
-It can be observed that the starting point are variables $$\mathcal X_r$$ (i.e., $$\mathcal X_{\ell - 1}$$) and $$\mathcal X_c$$ (i.e., $$\mathcal X_\ell$$) following a categorical distribution with $$\mathbf p_i = \frac{1}{d}$$ where $$d=4$$. Then the bivariate distribution is sampled on variable `Z` where 80% of the examples where $$\mathcal X_r=\mathcal X_c$$ are droped and it is induced a dependency for $$\mathcal X_r=1$$ and $$\mathcal X_c=2$$.   
+يمكن ملاحظة أن نقطة البداية هي المتغيرات $$\mathcal X_r$$ (أي $$\mathcal X_{\ell - 1}$$) و $$\mathcal X_c$$ (أي $$\mathcal X_\ell$$) التابعة لتوزيع فئوي مع $$\mathbf p_i = \frac{1}{d}$$ حيث $$d=4$$. ثم يتم أخذ عينات من التوزيع ثنائي المتغير على المتغير `Z` حيث يتم إسقاط 80% من الأمثلة التي يكون فيها $$\mathcal X_r=\mathcal X_c$$ ويتم استحثاث تبعية لـ $$\mathcal X_r=1$$ و $$\mathcal X_c=2$$.
 
-The estimated $$\mathcal P(\mathcal X_r, \mathcal X_c)$$ is 
+القيم المقدرة لـ $$\mathcal P(\mathcal X_r, \mathcal X_c)$$ هي:
 {: #bivarite-distribution-bigrams }
 
 $$
@@ -112,21 +112,21 @@ $$
 \end{pmatrix}.
 $$
 
-The marginal distribution $$\mathbb P(\mathcal X_r) = (0.249374, 0.246370, 0.255133, 0.249124)$$ which can be obtained as follows:
+التوزيع الهامشي هو $$\mathbb P(\mathcal X_r) = (0.249374, 0.246370, 0.255133, 0.249124)$$ ويمكن الحصول عليه كما يلي:
 
 ```python
 M_r = W.sum(axis=1)
 ```
 
-where `W` contains the estimated bivariate distribution. It is not necessary to obtain the marginal $$\mathbb P(\mathcal X_c) = (0.241988, 0.244367, 0.265648, 0.247997)$$; however, it is observed that the dependency induce impacts this marginal and not the former.
+حيث `W` تحتوي على التوزيع ثنائي المتغير المقدر. ليس من الضروري الحصول على التوزيع الهامشي $$\mathbb P(\mathcal X_c) = (0.241988, 0.244367, 0.265648, 0.247997)$$؛ ومع ذلك، فإنه يُلاحظ أن التبعية المستحثة تؤثر على هذا الهامش وليس الهامش السابق.
 
-The conditional $$\mathbb P(\mathcal X_c \mid \mathcal X_r)$$ can be estimated as  
+يمكن تقدير الاحتمال الشرطي $$\mathbb P(\mathcal X_c \mid \mathcal X_r)$$ كـ:
 
 ```python
 p_l = (W / np.atleast_2d(M_r).T)
 ```
 
-and the result is shown in the following matrix
+والنتيجة معروضة في المصفوفة التالية:
 
 $$
 \begin{pmatrix}
@@ -137,28 +137,28 @@ $$
 \end{pmatrix}.
 $$
 
-## Generating Sequences
+## توليد المتواليات النصية (Generating Sequences)
 {: #sec:generating-sequences }
 
-The conditional probability $$\mathbb P(\mathcal X_c \mid \mathcal X_r)$$ (variable `p_l`) and the marginal probability $$\mathbb P(\mathcal X_r)$$ (variable `M_r`) can be used to generate a text. The example would be more realistic if we used letters instead of indices; this can be done with a mapping between the index and string, as can be seen below.
+يمكن استخدام الاحتمال الشرطي $$\mathbb P(\mathcal X_c \mid \mathcal X_r)$$ (المتغير `p_l`) والاحتمال الهامشي $$\mathbb P(\mathcal X_r)$$ (المتغير `M_r`) لتوليد نص. سيكون المثال أكثر واقعية إذا استخدمنا الأحرف بدلاً من الفهارس؛ ويمكن القيام بذلك بربط الفهرس بالسلسلة النصية، كما يتضح أدناه.
 
 ```python
 id2word = {0: 'a', 1: 'b', 2: 'c', 3: 'd'}
 ```
 
-It is helpful to define a function (`cat`) that behaves like a Categorical distribution; this can be done using a Multinomial distribution using the parameters shown in the following code.
+من المفيد تعريف دالة (`cat`) تتصرف مثل توزيع فئوي؛ ويمكن القيام بذلك باستخدام توزيع متعدد الحدود (Multinomial distribution) باستخدام المعلمات الموضحة في الكود التالي.
 
 ```python
 cat = lambda x: np.random.multinomial(1, x, 1).argmax()
 ```
 
-The requirement to use the conditional probability is that a starting word is needed; the conditional probability $$\mathbb P(\mathcal X_c \mid \mathcal X_r)$$ once the value is known of $$\mathcal X_r$$. We can assume that the first word can be simulated using the marginal $$\mathbb P(\mathcal X_r)$$ as can be seen as follows.
+شرط استخدام الاحتمال الشرطي هو الحاجة إلى كلمة بداية؛ الاحتمال الشرطي $$\mathbb P(\mathcal X_c \mid \mathcal X_r)$$ بمجرد معرفة قيمة $$\mathcal X_r$$. يمكننا أن نفترض أنه يمكن محاكاة الكلمة الأولى باستخدام الهامش $$\mathbb P(\mathcal X_r)$$ كما يتضح فيما يلي.
 
 ```python
 w1 = cat(M_r)
 ```
 
-Once the starting word is obtained, it is needed to iterate as many times as one wants using the conditional probability to generate the next token; this can be observed in the following code.  
+بمجرد الحصول على كلمة البداية، فإنه يلزم التكرار للعدد المرغوب من المرات باستخدام الاحتمال الشرطي لتوليد الرمز التالي؛ ويمكن ملاحظة ذلك في الكود التالي.
 
 ```python
 l = 25
@@ -169,20 +169,20 @@ while len(text) < l:
 text = " ".join(map(lambda x: id2word[x], text))
 ```
 
-The previous code (including the marginal distribution) is executed three times, and the result can be observed in the following table. 
+يتم تنفيذ الكود السابق (بما في ذلك التوزيع الهامشي) ثلاث مرات، ويمكن ملاحظة النتيجة في الجدول التالي.
 
-|Text                                             |
+|النص (Text)                                            |
 |-------------------------------------------------|
 |d a d c b d c d c d a b a b c d a d b d a d b c b|
 |c a b a c a c d b d d a d c d b d b d b a b a b c|
 |b a c b a b a c b d a d c b c d b c d c a c b d c|
 
 
-## Using a Sequence to Estimate $$\mathbb P(\mathcal X_r, \mathcal X_c)$$
+## استخدام متوالية لتقدير $$\mathbb P(\mathcal X_r, \mathcal X_c)$$
 
-NLP aims to find and estimate the model that can be used to generate text; therefore, it is unrealistic to have $$\mathbb P(\mathcal X_{1}, \mathcal X_{2}, \ldots, \mathcal X_\ell)$$; however, we can estimate it using examples. Considering that we have a method to generate text, we can generate a long sequence and estimate the bivariate distribution parameters from it.
+تهدف معالجة اللغة الطبيعية إلى العثور على النموذج الذي يمكن استخدامه لتوليد النص وتقديره؛ لذلك، ليس من الواقعي الحصول على $$\mathbb P(\mathcal X_{1}, \mathcal X_{2}, \ldots, \mathcal X_\ell)$$ بشكل مباشر؛ ومع ذلك، يمكننا تقديره باستخدام الأمثلة. بالنظر إلى أن لدينا طريقة لتوليد النص، يمكننا توليد تسلسل طويل وتقدير معلمات التوزيع ثنائي المتغير منه.
 
-The first step is to have a mapping from words to numbers. The second step is to retrieve the words, and the third step is to create the bigrams. These can be observed in the following code.  
+الخطوة الأولى هي الحصول على تعيين من الكلمات إلى الأرقام. الخطوة الثانية هي استرجاع الكلمات، والخطوة الثالثة هي إنشاء ثنائيات الكلمات. ويمكن ملاحظة ذلك في الكود التالي.
 
 ```python
 w2id = {v: k for k, v in id2word.items()}
@@ -190,7 +190,7 @@ lst = [w2id[x] for x in text.split()]
 Z = [[a, b] for a, b in zip(lst, lst[1:])]
 ```
 
-The rest of the code we have seen previously; however, it is next to facilitate the reading. 
+بقية الكود رأيناها سابقًا؛ ومع ذلك فإنه معروض أدناه لتسهيل القراءة.
 
 ```python
 d = len(w2id)
@@ -200,7 +200,7 @@ for r, c in Z:
 W = W / W.sum()
 ```
 
-The bivariate distribution estimated from the sequence is presented in the following matrix. It can be observed that the values of this matrix are similar to the [matrix](/NLP-Course/topics/04NGramLM/#bivarite-distribution-bigrams) used to generate the sequence.
+التوزيع ثنائي المتغير المقدر من التسلسل معروض في المصفوفة التالية. يمكن ملاحظة أن قيم هذه المصفوفة تشبه [المصفوفة](/NLP-Course-Ar/topics/04NGramLM.html#bivarite-distribution-bigrams) المستخدمة لتوليد التسلسل.
 
 $$
 \begin{pmatrix}
@@ -211,9 +211,9 @@ $$
 \end{pmatrix}.
 $$
 
-## Joint Probability
+## الاحتمال المشترك (Joint Probability)
 
-We have all the elements to compute the joint probability of a particular sequence, for example the probability of observing the sequence *a d b c* is $$\mathbb P(\text{"a d b c"}) = 0.008885$$; this is a simplified notation the complete notation would be $$\mathbb P(\mathcal X_1=a, \mathcal X_2=d, \mathcal X_3=b, \mathcal X_4=c) \approx \mathbb P(\mathcal X_1) \prod_{i=2}^4 \mathbb P(\mathcal X_{i} \mid \mathcal X_{i-1}).$$ The following code uses the probability chain rule to estimate the joint probability.
+لدينا جميع العناصر لحساب الاحتمال المشترك لتسلسل معين، على سبيل المثال احتمال ملاحظة التسلسل *a d b c* هو $$\mathbb P(\text{"a d b c"}) = 0.008885$$؛ هذا ترميز مبسط والترميز الكامل سيكون $$\mathbb P(\mathcal X_1=a, \mathcal X_2=d, \mathcal X_3=b, \mathcal X_4=c) \approx \mathbb P(\mathcal X_1) \prod_{i=2}^4 \mathbb P(\mathcal X_{i} \mid \mathcal X_{i-1}).$$ يستخدم الكود التالي قاعدة سلسلة الاحتمالات لتقدير الاحتمال المشترك.
 
 ```python
 text = 'a d b c'
@@ -223,17 +223,17 @@ for a, b in zip(lst, lst[1:]):
     p *= p_l[a, b]
 ```
 
-The previous example is complemented with a sequence that, by definition, it is known that has a lower probability, the sequence differs only in the last word, and its probability is $$\mathbb P(\text{"a d b d"}) = 0.006907.$$
+يتم إكمال المثال السابق بتسلسل معروف، حسب التعريف، أن له احتمال أقل، حيث يختلف التسلسل فقط في الكلمة الأخيرة، واحتماله هو $$\mathbb P(\text{"a d b d"}) = 0.006907.$$
 
-The procedure described presents the process of modeling a language from the beginning; it starts by assuming that the language is generated from a particular algorithm, then the algorithm is used to estimate a bivariate distribution, which is used to produce a sequence. The sequence is an analogy of a text written in natural language, then the sequence is used to estimate a bivariate distribution, and we can compare both distributions to illustrate that even in a simple process, it is unfeasible to obtain two matrices with the same values. 
+يقدم الإجراء الموصوف عملية نمذجة اللغة من البداية؛ يبدأ بافتراض أن اللغة تتولد من خوارزمية معينة، ثم تُستخدم الخوارزمية لتقدير توزيع ثنائي المتغير، والذي يُستخدم لإنتاج تسلسل. التسلسل هو قياس لنص مكتوب باللغة الطبيعية، ثم يتم استخدام التسلسل لتقدير توزيع ثنائي المتغير، ويمكننا مقارنة التوزيعين لتوضيح أنه حتى في عملية بسيطة، فإنه من غير العملي الحصول على مصفوفتين بنفس القيم.
 
-# Overcoming Assumptions
+# تجاوز الافتراضات (Overcoming Assumptions)
 
-However, some components of the previous formulation are unrealistic for modeling a language. The first one is the addition of the possible sequences of a particular length sum to one, e.g., $$\sum_{x,y,z} \mathbb P(\mathcal X_{\ell-2}=x, \mathcal X_{\ell-1}=y, \mathcal X_\ell=z) = 1$$. The implication is that there is a probability distribution for every length, which is not a desirable feature for a language model because the length of a sentence is variable. 
+ومع ذلك، فإن بعض مكونات الصياغة السابقة غير واقعية لنمذجة اللغة. الأول هو أن مجموع الاحتمالات للمتواليات الممكنة لطول معين يساوي واحدًا، على سبيل المثال $$\sum_{x,y,z} \mathbb P(\mathcal X_{\ell-2}=x, \mathcal X_{\ell-1}=y, \mathcal X_\ell=z) = 1$$. والنتيجة هي أن هناك توزيع احتمالي لكل طول، وهي ليست ميزة مرغوبة لنموذج اللغة لأن طول الجملة متغير.
 
-The second one is that the first word cannot be estimated using the marginal $$\mathbb P(\mathcal X_r)$$; this distribution does not consider that some words are more frequently used to start a sentence. This effect can be incorporated in the model with a starting symbol, e.g., the sequence *a b d* would be *$$\epsilon$$ a b d*. 
+والثاني هو أنه لا يمكن تقدير الكلمة الأولى باستخدام الهامش $$\mathbb P(\mathcal X_r)$$؛ حيث لا يأخذ هذا التوزيع في الاعتبار أن بعض الكلمات تُستخدم بشكل أكثر تكرارًا لبدء الجملة. يمكن تضمين هذا التأثير في النموذج باستخدام رمز البداية، على سبيل المثال التسلسل *a b d* سيكون *$$\epsilon$$ a b d*.
 
-The sum of the probabilities of all possible sentences with three words and a starting symbol can be seen in the following equation. 
+يمكن رؤية مجموع احتمالات جميع الجمل الممكنة المكونة من ثلاث كلمات ورمز بداية في المعادلة التالية.
 
 $$
 \begin{eqnarray}
@@ -246,11 +246,11 @@ $$
 \end{eqnarray}
 $$
 
-It can be observed that the inclusion of a starting symbol does not solve the problem that there is a probability distribution for every length.
+يمكن ملاحظة أن تضمين رمز البداية لا يحل مشكلة وجود توزيع احتمالي لكل طول.
 
-The third problem detected is that the length of the sentence is a parameter controlled by the person generating the sequence; however, the length of the sentence depends on the content of the sentence, so it is also a random variable. A feasible approach to include this behavior in the model is adding an ending symbol. 
+المشكلة الثالثة التي تم اكتشافها هي أن طول الجملة هو معلمة يتحكم فيها الشخص الذي يولد التسلسل؛ ومع ذلك، فإن طول الجملة يعتمد على محتوى الجملة، لذا فهو أيضًا متغير عشوائي. النهج الممكن لتضمين هذا السلوك في النموذج هو إضافة رمز النهاية.
 
-The accumulated probability of all the possibilities for a three-word sentence with a starting symbol and ending symbols (i.e., $$\epsilon_s$$ and $$\epsilon_e$$, respectively), can be expressed as follows:
+يمكن التعبير عن الاحتمال المتراكم لجميع الإمكانيات لجملة مكونة من ثلاث كلمات برمز بداية ورموز نهاية (أي $$\epsilon_s$$ و $$\epsilon_e$$، على التوالي)، كما يلي:
 
 
 $$
@@ -260,7 +260,7 @@ $$
 \end{eqnarray}
 $$
 
-As can be seen, the procedure used on the equation with the starting symbol is not feasible on the equation at hand; consequently, it is needed to analyze this equation further to figure out how to proceed. The first characteristic to notice is that $$\mathbb P(\mathcal X_1=\epsilon_s)=1$$. The second one is that the first word is always $$\epsilon_s$$; consequently, $$\mathbb P(\mathcal X_2=x \mid \mathcal X_1=\epsilon_s) = \mathbb P(\mathcal X_2=x)$$; using these elements, it is obtained:
+كما يتضح، فإن الإجراء المستخدم في المعادلة ذات رمز البداية ليس ممكنًا في المعادلة الحالية؛ وبالتالي، يلزم تحليل هذه المعادلة بشكل أكبر لمعرفة كيفية المتابعة. السمة الأولى التي يجب ملاحظتها هي أن $$\mathbb P(\mathcal X_1=\epsilon_s)=1$$. والسمة الثانية هي أن الكلمة الأولى هي دائمًا $$\epsilon_s$$؛ وبالتالي، فإن $$\mathbb P(\mathcal X_2=x \mid \mathcal X_1=\epsilon_s) = \mathbb P(\mathcal X_2=x)$$؛ وباستخدام هذه العناصر، نحصل على:
 
 $$
 \begin{eqnarray}
@@ -272,13 +272,13 @@ $$
 \end{eqnarray}
 $$
 
-As can be seen, the overall probability does not sum to $$1$$; it depends on the probability of choosing the ending symbol. 
+كما يتضح، فإن الاحتمال الإجمالي لا يجمع إلى $$1$$؛ بل يعتمد على احتمال اختيار رمز النهاية.
 
-# Bigram LM from Tweets
+# نموذج اللغة لثنائيات الكلمات من التغريدات (Bigram LM from Tweets)
 
-The simplest model we can create is a bigram LM; the starting point is to have a corpus. -The corpus used in this example is a set of 50,000 tweets written in English.- Once the corpus is obtained, we can use it to estimate the bivariate distribution $$\mathbb P(\mathcal X_{\ell-1}, \mathcal X_\ell)$$ and use the conditional probability to obtain $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1}).$$
+أبسط نموذج يمكننا إنشاؤه هو bigram LM؛ نقطة البداية هي وجود مدونة نصية (Corpus). -المدونة النصية المستخدمة في هذا المثال هي مجموعة من 50,000 تغريدة مكتوبة باللغة الإنجليزية.- بمجرد الحصول على المدونة النصية، يمكننا استخدامها لتقدير التوزيع ثنائي المتغير $$\mathbb P(\mathcal X_{\ell-1}, \mathcal X_\ell)$$ واستخدام الاحتمال الشرطي للحصول على $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1}).$$
 
-There are different paths to compute $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$ one of them is using the raw frequency of the words as follows:
+هناك مسارات مختلفة لحساب $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$ أحدها هو استخدام التكرار الخام للكلمات كما يلي:
 
 $$\begin{eqnarray}
 \mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1}) &=& \frac{\mathbb P(\mathcal X_{\ell-1}, \mathcal X_\ell)}{ \mathbb P(\mathcal X_{\ell-1})}\\
@@ -287,9 +287,9 @@ $$\begin{eqnarray}
 &=& \frac{C(\mathcal X_{\ell-1}, \mathcal X_\ell)}{\sum_i C(\mathcal X_{\ell-1}, \mathcal X_i)}\\
 \end{eqnarray},$$
 
-$$C$$ is the co-occurrence matrix. 
+حيث $$C$$ هي مصفوفة التوارد.
 
-The co-occurrence matrix (variable `bigrams`) is created with the following code; as can be observed for every tweet, it is included a starting and ending symbol. 
+تم إنشاء مصفوفة التوارد (المتغير `bigrams`) بالكود التالي؛ وكما يمكن ملاحظته لكل تغريدة، فإنه يتضمن رمز بداية ونهاية.
 
 ```python
 fname = join('dataset', 'tweets-2022-01-17.json.gz')
@@ -303,7 +303,7 @@ for text in tweet_iterator(fname):
     bigrams.update(_)
 ```
 
-The term $$\sum_i C(\mathcal X_{\ell-1}, \mathcal X_i)$$ is the frequency of word $$\mathcal X_{\ell-1}$$, i.e., $$C(\mathcal X_{\ell-1}) = \sum_i C(\mathcal X_{\ell-1}, \mathcal X_i)$$ which corresponds to variable `prev` in the following code
+المصطلح $$\sum_i C(\mathcal X_{\ell-1}, \mathcal X_i)$$ هو تكرار الكلمة $$\mathcal X_{\ell-1}$$، أي $$C(\mathcal X_{\ell-1}) = \sum_i C(\mathcal X_{\ell-1}, \mathcal X_i)$$ والذي يتوافق مع المتغير `prev` في الكود التالي
 
 ```python
 prev = dict()
@@ -314,7 +314,7 @@ for (a, b), v in bigrams.items():
         prev[a] = v
 ```
 
-We can store $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$ on a nested dictionary which is the variable `P` in the following code.
+يمكننا تخزين $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$ في قاموس متداخل وهو المتغير `P` في الكود التالي.
 
 ```python
 P = defaultdict(Counter)
@@ -323,12 +323,12 @@ for (a, b), v in bigrams.items():
     next[b] = v / prev[a]
 ```
 
-The conditional probability $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$ can be used to illustrate which is the most probable word at the starting of a sentence, as seen in the next figure. 
+يمكن استخدام الاحتمال الشرطي $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$ لتوضيح الكلمة الأكثر احتمالاً في بداية الجملة، كما هو موضح في الشكل التالي.
 
-![Word cloud probability given starting symbol](/NLP-Course/assets/images/wordcloud_prob_start.png)
+![Word cloud probability given starting symbol](/NLP-Course-Ar/assets/images/wordcloud_prob_start.png)
 <details markdown="block">
   <summary>
-    Word cloud code
+    كود سحابة الكلمات (Word cloud code)
   </summary>
 
 ```python
@@ -339,7 +339,7 @@ plt.tight_layout()
 ```
 </details>
 
-[Generating Sequences Section](#sec:generating-sequences) presented an algorithm to generate a sentence given a $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$; that algorithm can be extended to generate a sentence by considering the starting and ending symbols as can be seen in the following code.
+قدم قسم [توليد المتواليات النصية](#sec:generating-sequences) خوارزمية لتوليد جملة بالنظر إلى $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1})$$؛ يمكن تمديد تلك الخوارزمية لتوليد جملة بمراعاة رمزي البداية والنهاية كما يمكن ملاحظته في الكود التالي.
 
 ```python
 sentence = ['<s>']
@@ -350,9 +350,9 @@ while sentence[-1] != '</s>':
     sentence.append(pos[index][0])
 ```
 
-The following is an example of a sentence generated with the previous procedure: *$$\epsilon_s$$ What happened before the one idiot or a few things to me up $$\epsilon_e$$*. 
+فيما يلي مثال لجملة تم توليدها بالإجراء السابق: *$$\epsilon_s$$ What happened before the one idiot or a few things to me up $$\epsilon_e$$*.
 
-As we described previously, the probability chained rule can be used to estimate the probability of a sentence. For example, the following code defines a function to compute the joint probability, i.e., the probability of a sentence; the difference between the following implementation and the previous one is the inclusion of the starting and ending symbol. 
+كما وصفنا سابقًا، يمكن استخدام قاعدة سلسلة الاحتمالات لتقدير احتمال الجملة. على سبيل المثال، يحدد الكود التالي دالة لحساب الاحتمال المشترك، أي احتمال الجملة؛ الفرق بين التنفيذ التالي والتنفيذ السابق هو تضمين رمزي البداية والنهاية.
 
 ```python
 def joint_prob(sentence):
@@ -368,17 +368,17 @@ joint_prob('I like to play football')
 8.491041580185946e-12
 ```
 
-# Performance
+# الأداء وتقييم النموذج (Performance)
 
-This section has been devoted to describing LM and a particular procedure to develop it. The approach has a solid mathematical foundation; however, at the same time, in order to make it feasible, some assumptions have been made. Consequently, one wonders whether those decisions impact the quality of the LM and if they have to what degree. The best way to measure the impact of those decisions is to test the LM on the final application where it is being used; that is used, the metrics developed to test the application, and indirectly measure the impact that has a complex LM in that scenario. 
+تم تخصيص هذا القسم لوصف نموذج اللغة (LM) والإجراء الخاص بتطويره. يمتلك هذا النهج أساسًا رياضيًا صلبًا؛ ومع ذلك، في الوقت نفسه، ومن أجل جعله ممكنًا، تم إجراء بعض الافتراضات. وبالتالي، يتساءل المرء عما إذا كانت تلك القرارات تؤثر على جودة LM وإلى أي درجة. أفضل طريقة لقياس تأثير تلك القرارات هي اختبار LM في التطبيق النهائي حيث يتم استخدامه؛ أي استخدام المقاييس المكتشفة لاختبار التطبيق، وقياس التأثير بشكل غير مباشر على معقدات LM في ذلك السيناريو.
 
-It is not always possible to embed different LM in the final application and test which one is better; another approach is to use a particular performance metric to test the developed LM. The direct approach would be to compute the joint probability in another set and use that measure to compare different LM. However, in practice, the joint probability is not used; instead, it is used **Perplexity** defined as:
+ليس من الممكن دائمًا تضمين نماذج لغة مختلفة في التطبيق النهائي واختبار أيهما أفضل؛ هناك نهج آخر يكمن في استخدام مقياس أداء معين لاختبار LM المطور. سيكون النهج المباشر هو حساب الاحتمال المشترك في مجموعة بيانات أخرى واستخدام ذلك القياس لمقارنة LMs المختلفة. ومع ذلك، في الممارسة العملية، لا يتم استخدام الاحتمال المشترك؛ بدلاً من ذلك، يتم استخدام **الحيرة (Perplexity - PP)** والمُعرّفة كـ:
 
 $$PP(\mathcal X_1, \ldots, \mathcal X_N) = \sqrt[N]{\frac{1}{\mathbb P(\mathcal X_1, \ldots, \mathcal X_N)}}.$$
 
-The PP of a bigram LM is $$PP(\mathcal X_1, \ldots, \mathcal X_N) = \sqrt[N]{\frac{1}{\mathbb P(\mathcal X_1=\epsilon_s) \prod_{\ell=2}^N \mathbb P(\mathcal X_{\ell} \mid \mathcal X_{\ell -1})}} = \sqrt[N]{\frac{1}{\prod_{\ell=2}^N \mathbb P(\mathcal X_{\ell} \mid \mathcal X_{\ell -1})}}.$$ For a moment, let us assume that $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1}) = c$$ is constant for all the bigrams. Under this assumption, the Perprexity is $$\sqrt[N]{\frac{1}{c^{N-1}}}$$; however, if $$N$$ does not consider the starting symbol which has a probability of $$1$$, the Perplexity would be $$\sqrt[N-1]{\frac{1}{c^{N-1}}}=c$$ which is more interpretable than the previous equation, and it is related to the branching factor of the language. Consequently, the starting symbol will not contribute to the value of $$N$$ in the computation of Perplexity. 
+إن الحيرة (PP) لـ bigram LM هي $$PP(\mathcal X_1, \ldots, \mathcal X_N) = \sqrt[N]{\frac{1}{\mathbb P(\mathcal X_1=\epsilon_s) \prod_{\ell=2}^N \mathbb P(\mathcal X_{\ell} \mid \mathcal X_{\ell -1})}} = \sqrt[N]{\frac{1}{\prod_{\ell=2}^N \mathbb P(\mathcal X_{\ell} \mid \mathcal X_{\ell -1})}}.$$ للحظة، دعنا نفترض أن $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell -1}) = c$$ ثابت لجميع ثنائيات الكلمات. تحت هذا الافتراض، تكون الحيرة هي $$\sqrt[N]{\frac{1}{c^{N-1}}}$$؛ ومع ذلك، إذا كانت $$N$$ لا تأخذ في الاعتبار رمز البداية الذي له احتمال $$1$$، فستكون الحيرة هي $$\sqrt[N-1]{\frac{1}{c^{N-1}}}=c$$ وهي أكثر قابلية للتفسير من المعادلة السابقة، وترتبط بعامل التفريع في اللغة. وبالتالي، لن يساهم رمز البداية في قيمة $$N$$ في حساب الحيرة.
 
-The following function computes the Perplexity assuming a sentence or a list of sentences as inputs. The product $$\prod \mathbb P(\mathcal X_{\ell} \mid \mathcal X_{\ell-1})$$ is transformed into a sum using the logarithm, and the rest of the operations continue on log space. The last step is to change the result using the exponent. 
+تحسب الدالة التالية الحيرة بافتراض جملة أو قائمة جمل كمدخلات. يتم تحويل الجداء $$\prod \mathbb P(\mathcal X_{\ell} \mid \mathcal X_{\ell-1})$$ إلى مجموع باستخدام اللوغاريتم، وتستمر بقية العمليات على الفضاء اللوغاريتمي. الخطوة الأخيرة هي تغيير النتيجة باستخدام الأس.
 
 ```python
 def PP(sentences,
@@ -397,7 +397,7 @@ def PP(sentences,
     return np.exp(_)
 ```
 
-For example, the Perplexity of the sentence *I like to play football* is:
+على سبيل المثال، فإن الحيرة للجملة *I like to play football* هي:
 
 ```python
 text = 'I like to play football'
@@ -405,7 +405,7 @@ PP(text)
 70.01211090353188
 ```
 
-The Perplexity of the corpus used to train the LM is:
+والحيرة للمدونة النصية المستخدمة لتدريب LM هي:
 
 ```python
 fname2 = join('dataset', 'tweets-2022-01-17.json.gz')
@@ -413,23 +413,23 @@ PP([x['text'] for x in tweet_iterator(fname2)])
 66.8740729934466
 ```
 
-Another example could be *I like to play soccer* which is computed as follows.
+مثال آخر يمكن أن يكون *I like to play soccer* والذي يتم حسابه كما يلي.
 
 ```python
 PP('I like to play soccer')
 ```
 
-This example produces a division by zero error; the problem is that the bigram *play soccer* has not been seen in the training set. However, one would still like to compute the Perplexity of that sentence and, more critically, an LM must model any sentence even though it has not been seen on the training corpus. 
+ينتج عن هذا المثال خطأ قسمة على الصفر؛ المشكلة هي أن الكلمتين الثنائيتين *play soccer* لم تُشاهد في مجموعة التنسيق/التدريب. ومع ذلك، لا يزال المرء يرغب في حساب حيرة تلك الجملة، والأهم من ذلك، يجب أن ينمذج LM أي جملة حتى لو لم تتم مشاهدتها في مدونة التدريب.
 
-# Out of Vocabulary
+# الكلمات خارج المفردات (Out of Vocabulary - OOV)
 
-The problem shown in the previous example is known as **out of vocabulary**. As we know, most of the words are infrequent, which requires training the model on a massive corpus to collect as many words as possible; however, there will not be a sufficiently large dataset for all the cases given that the language evolves and the physical constraints of computing an LM with a corpus with that magnitude. Consequently, the OOV problem must be handled differently. 
+المشكلة الموضحة في المثال السابق تُعرف باسم **الكلمات خارج المفردات (Out of Vocabulary - OOV)**. كما نعلم، فإن معظم الكلمات غير متكررة، مما يتطلب تدريب النموذج على مدونة نصية ضخمة لجمع أكبر عدد ممكن من الكلمات؛ ومع ذلك، لن تكون هناك مجموعة بيانات كبيرة بما يكفي لجميع الحالات بالنظر إلى أن اللغة تتطور والقيود الفيزيائية لحساب LM مع مدونة نصية بهذا الحجم. وبالتالي، يجب التعامل مع مشكلة OOV بشكل مختلف.
 
-Traditionally, the approach followed is to reduce the mass given to those words retrieved on the training set and then use that mass in the OOV words. It is mentioned mass because the probability of all events must sum to one, so in the process, we had followed the sum of all words' probabilities sum to one. That sum cannot be one because there are words that have not been seen. 
+تقليديًا، يكون النهج المتبع هو تقليل الكتلة الممنوحة لتلك الكلمات المسترجعة في مجموعة التدريب ثم استخدام تلك الكتلة في كلمات OOV. ويتم ذكر الكتلة لأن احتمال جميع الأحداث يجب أن يجمع إلى واحد، ففي العملية التي اتبعناها، يكون مجموع احتمالات جميع الكلمات واحدًا. لا يمكن أن يكون هذا المجموع واحدًا لأن هناك كلمات لم تُشاهد بعد.
 
-## Laplace Smoothing
+## تنعيم لابلاس (Laplace Smoothing)
 
-One approach is to increase the frequency of all the words in the training corpus by one. The idea is to define a function $$C^\star$$ as follows $$C^\star(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) = C(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) + 1$$, for the case of bigrams corresponds to $$C^\star(\mathcal X_{\ell-1}, \mathcal X_{\ell}) = C(\mathcal X_{\ell-1}, \mathcal X_{\ell}) + 1$$, where $$C^\star(\mathcal X_{\ell-1}) = \sum_i C^\star(\mathcal X_{\ell-1}, \mathcal X_i) = C(\mathcal X_{\ell-1}) + V$$, where $$V$$ is the vocabulary size counting the unknown word. The method can be implemented with the following code. 
+أحد المناهج هو زيادة تكرار جميع الكلمات في مدونة التدريب بمقدار واحد. الفكرة هي تعريف دالة $$C^\star$$ كما يلي $$C^\star(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) = C(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) + 1$$، وبالنسبة لحالة ثنائيات الكلمات تتوافق مع $$C^\star(\mathcal X_{\ell-1}, \mathcal X_{\ell}) = C(\mathcal X_{\ell-1}, \mathcal X_{\ell}) + 1$$، حيث $$C^\star(\mathcal X_{\ell-1}) = \sum_i C^\star(\mathcal X_{\ell-1}, \mathcal X_i) = C(\mathcal X_{\ell-1}) + V$$، حيث $$V$$ هو حجم المفردات مع حساب الكلمة غير المعروفة. يمكن تنفيذ الطريقة بالكود التالي.
 
 ```python
 V = set()
@@ -449,18 +449,18 @@ for (a, b), v in bigrams.items():
     next[b] = (v + 1) / (prev_l[a] + V)
 ```
 
-The following table compares the four words more probable given the starting symbol using the approach that does not handle the OOV and using the Laplace smoothing. 
+يقارن الجدول التالي الكلمات الأربع الأكثر احتمالاً بوجود رمز البداية باستخدام النهج الذي لا يتعامل مع OOV وباستخدام تنعيم لابلاس.
 
-|Word|Baseline|Laplace |
+|الكلمة (Word)|خط الأساس (Baseline)|تنعيم لابلاس (Laplace) |
 |----|--------|--------|
 |I   |0.028640|0.004450|
 |The |0.020600|0.003201|
 |This|0.009020|0.001403|
 |A   |0.006780|0.001056|
 
-It can be observed from the table that the probability using the Laplace method is reduced for the same bigram; on the other hand, the mass corresponding to unknown words given the starting symbol is: $$1 - \sum \mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - 1}=\epsilon_s) \approx 0.7541.$$ 
+يمكن ملاحظة من الجدول أن الاحتمال باستخدام طريقة لابلاس قد ينخفض لنفس الكلمة الثنائية؛ ومن ناحية أخرى، فإن الكتلة المقابلة للكلمات غير المعروفة المعطاة لرمز البداية هي: $$1 - \sum \mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - 1}=\epsilon_s) \approx 0.7541.$$
 
-The Perplexity can be computed using the method described previously; however, the Laplace Smoothing modifies how the conditional probability is calculated. The Perplexity method uses a helper function that is the conditional probability in the standard case. In the Laplace smoothing, the helper function considers the case where the next word is unknown, and even when both words are not known, this can be observed in the following code. 
+يمكن حساب الحيرة باستخدام الطريقة الموصوفة سابقًا؛ ومع ذلك، فإن تنعيم لابلاس يغير كيفية حساب الاحتمال الشرطي. تستخدم طريقة الحيرة دالة مساعدة وهي الاحتمال الشرطي في الحالة القياسية. في تنعيم لابلاس، تضع الدالة المساعدة في الاعتبار الحالة التي تكون فيها الكلمة التالية غير معروفة، وحتى عندما تكون كلا الكلمتين غير معروفين، يمكن ملاحظة ذلك في الكود التالي.
 
 ```python
 def laplace(a, b):
@@ -473,14 +473,14 @@ def laplace(a, b):
     return 1 / V
 ```
 
-The Perplexity of the sentence *I like to play football* is higher than that computed previously. On the other hand, the Perplexity of *I like to play soccer* is $$5342.2$$.
+إن الحيرة للجملة *I like to play football* أعلى من تلك المحسوبة سابقًا. ومن ناحية أخرى، فإن الحيرة لـ *I like to play soccer* هي $$5342.2$$.
 
 ```python
 PP('I like to play football', prob=laplace)
 2954.067962071032
 ```
 
-The Perplexity of an LM must be measured on a corpus that has not been seen; for example, its value for the tweets collected on January 10, 2022, is 
+يجب قياس حيرة نموذج اللغة على مدونة نصية لم تُشاهد من قبل؛ على سبيل المثال، قيمتها للتغريدات المجمعة في 10 يناير 2022 هي:
 
 ```python
 fname2 = join('dataset', 'tweets-2022-01-10.json.gz')
@@ -489,21 +489,21 @@ PP([x['text'] for x in tweet_iterator(fname2)],
 49563.71966143271
 ```
 
-The Perplexity of the corpus used to estimate the parameters is $$30646.76$$, which is lower than the Perplexity measured on a test set, which is the expected behavior.
+إن الحيرة لمدونة التنسيق المستخدمة لتقدير المعلمات هي $$30646.76$$، وهي أقل من الحيرة المقاسة على مجموعة الاختبار، وهو السلوك المتوقع.
 
-# Activities
+# الأنشطة والتمارين (Activities)
 
-Laplace smoothing can be modified to change the mass store for the unseen tokens. 
+يمكن تعديل تنعيم لابلاس لتغيير كتلة التخزين للرموز غير المشاهدة.
 
-## Add-$$k$$ Smoothing
+## تنعيم إضافة k (Add-k Smoothing)
 
-The idea is to replace $$1$$ by a constant $$k$$ in $$C^\star$$; with this modification $$C^\star$$ is defined as: $$C^\star(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) = C(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) + k$$. For the case of bigrams, the frequency for the words corresponds to $$C^\star(\mathcal X_{\ell-1}) = \sum_i C^\star(\mathcal X_{\ell-1}, \mathcal X_i) = C(\mathcal X_{\ell-1}) + kV.$$ 
+الفكرة هي استبدال $$1$$ بثابت $$k$$ في $$C^\star$$؛ مع هذا التعديل يتم تعريف $$C^\star$$ كـ: $$C^\star(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) = C(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) + k$$. بالنسبة لحالة ثنائيات الكلمات، يتوافق تكرار الكلمات مع $$C^\star(\mathcal X_{\ell-1}) = \sum_i C^\star(\mathcal X_{\ell-1}, \mathcal X_i) = C(\mathcal X_{\ell-1}) + kV.$$
 
-The conditional probability for bigrams is 
+يكون الاحتمال الشرطي لثنائيات الكلمات هو:
 
 $$\mathbb P(\mathcal X_\ell, \mid \mathcal X_{\ell -1}) =  \frac{C^\star (\mathcal X_{\ell -1}, \mathcal X_\ell)}{\sum_i C^\star (\mathcal X_{\ell - 1}, \mathcal X_i)} = \frac{C(\mathcal X_{\ell -1}, \mathcal X_\ell) + k}{C(\mathcal X_{\ell - 1}) + kV}, $$
 
-which can be implemented as follows; where `ngrams` corresponds to $$C$$ and `prev` is $$C(\mathcal X_{\ell - 1}).$$
+والذي يمكن تنفيذه كما يلي؛ حيث تتوافق `ngrams` مع $$C$$ و `prev` هي $$C(\mathcal X_{\ell - 1}).$$
 
 ```python
 def cond_prob(ngrams, prev):
@@ -515,7 +515,7 @@ def cond_prob(ngrams, prev):
     return output
 ```
 
-A method to compute $$C(\mathcal X_{\ell} - 1)$$ from $$C(\mathcal X_{\ell-1}, \mathcal X_i)$$ is shown below where `data` corresponds to the later frequency.
+تظهر أدناه طريقة حساب $$C(\mathcal X_{\ell} - 1)$$ من $$C(\mathcal X_{\ell-1}, \mathcal X_i)$$ حيث تتوافق `data` مع التكرار الأخير.
 
 ```python
 def sum_last(data):
@@ -526,7 +526,7 @@ def sum_last(data):
     return output
 ```
 
-The constant $$k$$ also impacts the procedure used to compute the conditional probability; the difference is the swap between one and $$k$$, as observed in the following code.
+يؤثر الثابت $$k$$ أيضًا على الإجراء المستخدم لحساب الاحتمال الشرطي؛ الفرق هو التبادل بين واحد و $$k$$، كما هو ملاحظ في الكود التالي.
 
 ```python
 K = 1 
@@ -540,7 +540,7 @@ def laplace(a, b):
     return K / (len(V) + K * len(V))
 ```
 
-The Perplexity of the sentence *I like to play soccer* can be computed with the following code, the difference is that the parameter $$k$$ is set to $$0.1$$.
+يمكن حساب الحيرة للجملة *I like to play soccer* بالكود التالي، والفرق هو أن المعلمة $$k$$ تعين على $$0.1$$.
 
 ```python
 prev_l = sum_last(bigrams)
@@ -551,15 +551,15 @@ PP('I like to play soccer',
 1780.7548164607583  
 ```
 
-## Max Smoothing
+## التنعيم الأقصى (Max Smoothing)
 
-Different techniques have been proposed to handle missing words on an LM; one similar to $$k$$ smoothing is to define $$C^\star$$ using the maximum of the frequency or the parameter $$k$$, i.e., $$C^\star(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) = \max(C(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}), k).$$
+تم اقتراح تقنيات مختلفة للتعامل مع الكلمات المفقودة في LM؛ هناك طريقة مشابهة لـ $$k$$ smoothing وهي تعريف $$C^\star$$ باستخدام الحد الأقصى للتكرار أو المعلمة $$k$$، أي $$C^\star(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}) = \max(C(\ldots, \mathcal X_{\ell-1}, \mathcal X_{\ell}), k).$$
 
-The conditional probability for bigrams is 
+الاحتمال الشرطي لثنائيات الكلمات هو:
 
 $$\mathbb P(\mathcal X_\ell, \mid \mathcal X_{\ell -1}) = \frac{\max(C(\mathcal X_{\ell -1}, \mathcal X_\ell), k)}{C(\mathcal X_{\ell - 1}) + k \sum_i \mathbb 1(C(\mathcal X_{\ell-1}, \mathcal X_i)=0)}, $$
 
-where the denominator can be implemented as:
+حيث يمكن تنفيذ المقام كـ:
 
 ```python
 def sum_last_max(data):
@@ -574,7 +574,7 @@ def sum_last_max(data):
     return output
 ```
 
-and the conditional probabilty corresponds to the following code.
+ويتوافق الاحتمال الشرطي مع الكود التالي.
 
 ```python
 def cond_prob_max(ngrams, prev):
@@ -586,7 +586,7 @@ def cond_prob_max(ngrams, prev):
     return output 
 ```
 
-The helper function of the Perplexity method corresponds to the following function.
+تتوافق الدالة المساعدة لطريقة الحيرة مع الدالة التالية.
 
 ```python
 def prob_max(a, b):
@@ -599,7 +599,7 @@ def prob_max(a, b):
     return 1 / V
 ```
 
-The Perplexity of the sentence *I like to play soccer* is obtained with the following code; it can be observed that the Perplexity value is similar using the $$k$$ smoothing method and this later one. 
+تم الحصول على حيرة الجملة *I like to play soccer* بالكود التالي؛ ويمكن ملاحظة أن قيمة الحيرة تتشابه باستخدام طريقة تنعيم $$k$$ وهذه الطريقة الأخيرة.
 
 ```python
 K = 0.1
@@ -610,18 +610,18 @@ PP('I like to play soccer',
 1762.903955247848  
 ```
 
-From another perspective, the parameter $$k$$ in both methods modifies the amount of mass stored to the unseen events, for the case of $$k=0.1$$ the mass stored for unseen events is $$1 - \sum \mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - 1}=\epsilon_s) \approx 0.3269$$ which is considerably lower than the one obtained when $$k=1$$ which is the standard Laplace Smoothing. 
+من منظور آخر، المعلمة $$k$$ في كلا الطريقتين تعدل كمية الكتلة المخزنة للأحداث غير المشاهدة، في حالة $$k=0.1$$ تكون الكتلة المخزنة للأحداث غير المشاهدة هي $$1 - \sum \mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - 1}=\epsilon_s) \approx 0.3269$$ وهي أقل بكثير من تلك التي تم الحصول عليها عندما تكون $$k=1$$ وهو تنعيم لابلاس القياسي.
 
-The parameter $$k$$ can be varied for different values to illustrate the behavior of Perplexity for different smoothing factors. The following picture presents the Perplexity for different values of $$k$$ when $$k$$ is in the range from $$0.01$$ to $$1$$. The values presented are the Perplexity obtained on the training set for the Laplace and Max Smoothing method and the Perplexity on the test set for both methods.
+يمكن تغيير المعلمة $$k$$ لقيم مختلفة لتوضيح سلوك الحيرة لعوامل التنعيم المختلفة. تنقّل الصورة التالية الحيرة لقيم مختلفة من $$k$$ عندما تكون $$k$$ في النطاق من $$0.01$$ إلى $$1$$. القيم المعروضة هي الحيرة التي تم الحصول عليها في مجموعة التدريب لطريقة تنعيم لابلاس والتنعيم الأقصى والحيرة في مجموعة الاختبار لكلا الطريقتين.
 
 
-![Max Smoothing](/NLP-Course/assets/images/laplace_max_smoothing.png)
+![Max Smoothing](/NLP-Course-Ar/assets/images/laplace_max_smoothing.png)
 
-## N-Gram
+## النماذج متعددة الكلمات (N-Gram)
 
-As expected, creating an LM using only bigrams is not enough to model the language's complexity; however, extending this model is straightforward by increasing the number of words considered. The model can be a trigram LM or a 4-gram model, and so on. However, every time the number of words is increased, there are fewer examples to estimate the joint probability, and even increasing the size of the training set is not enough. Therefore, LMs have changed to a continuous representation instead of a discrete one; this topic will be covered later in the course. 
+كما هو متوقع، فإن إنشاء LM باستخدام ثنائيات الكلمات فقط ليس كافياً لنمذجة تعقيد اللغة؛ ومع ذلك، فإن تمديد هذا النموذج أمر مباشر عن طريق زيادة عدد الكلمات المأخوذة في الاعتبار. يمكن أن يكون النموذج عبارة عن trigram LM أو 4-gram وهكذا. ومع ذلك، في كل مرة يتم فيها زيادة عدد الكلمات، يقل عدد الأمثلة لتقدير الاحتمال المشترك، وحتى زيادة حجم مجموعة التدريب لا تكفي. لذلك، تغيرت LMs إلى تمثيل مستمر بدلاً من التمثيل المنفصل؛ وسيتم تغطية هذا الموضوع لاحقًا في المساق.
 
-A trigram LM models $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - 2}, \mathcal X_{\ell -1})$$; the first step is to estimate these values from a corpus. The procedure is equivalent to the bigrams being the only difference is that it is needed to add another starting symbol. It can be observed that $$n-1$$ starting symbols are used and that the n-grams are computed using function `zip` and the list comprehension notation. 
+ينمذج trigram LM قيمة $$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell - 2}, \mathcal X_{\ell -1})$$؛ والخطوة الأولى هي تقدير هذه القيم من مدونة نصية. الإجراء يعادل ثنائيات الكلمات حيث الفرق الوحيد هو أنه يجب إضافة رمز بداية آخر. يمكن ملاحظة أنه يتم استخدام رموز بداية $$n-1$$ وأن n-grams يتم حسابها باستخدام الدالة `zip` وتدوين تجميع القوائم.
 
 ```python
 def compute_ngrams(fname, n=3):
@@ -636,7 +636,7 @@ def compute_ngrams(fname, n=3):
     return ngrams
 ```
 
-The Perplexity helper function needs to be updated to compute the n-grams; the procedure is similar to the one used to create the n-grams.
+تطلب الدالة المساعدة لـ Perplexity التحديث لحساب n-grams؛ الإجراء مشابه للإجراء المستخدم لإنشاء n-grams.
 
 ```python
 def PP(sentences,
@@ -656,7 +656,7 @@ def PP(sentences,
     return np.exp(_)
 ```
 
-At this point, we have all the elements to create an LM of any size; for example, the following code creates a trigram LM using max smoothing. 
+عند هذه النقطة، لدينا جميع العناصر لإنشاء LM بأي حجم؛ على سبيل المثال، ينشئ الكود التالي trigram LM باستخدام التنعيم الأقصى.
 
 ```python
 fname = join('dataset', 'tweets-2022-01-17.json.gz')
@@ -669,7 +669,7 @@ prev_l = sum_last_max(ngrams)
 P_l = cond_prob_max(ngrams, prev_l)
 ```
 
-The use of the LM can be illustrated by creating a word cloud of the conditional probability 
-$$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell-2}=of, \mathcal X_{\ell-1}=the)$$ (i.e., `P_l[('of', 'the')]`) shown below.
+يمكن توضيح استخدام LM بإنشاء سحابة كلمات للاحتمال الشرطي
+$$\mathbb P(\mathcal X_\ell \mid \mathcal X_{\ell-2}=of, \mathcal X_{\ell-1}=the)$$ (أي `P_l[('of', 'the')]`) الموضح أدناه.
 
-![Conditional on *of the*](/NLP-Course/assets/images/wordcloud_prob_of_the.png)
+![Conditional on *of the*](/NLP-Course-Ar/assets/images/wordcloud_prob_of_the.png)

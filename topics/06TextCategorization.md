@@ -1,19 +1,19 @@
 ---
 layout: default
-title: Text Categorization (Categorical Distribution)
+title: تصنيف النصوص
 nav_order: 6
 ---
 
-# Text Categorization (Categorical Distribution)
+# تصنيف النصوص
 {: .fs-10 .no_toc }
 
-## Contents
+## المحتويات
 {: .no_toc .text-delta }
 
 1. TOC
 {:toc}
 
-## Libraries used
+## المكتبات المستعملة
 {: .no_toc .text-delta }
 ```python
 import numpy as np
@@ -31,7 +31,7 @@ from sklearn.naive_bayes import MultinomialNB
 from os.path import join
 ```
 
-## Installing external libraries
+## تثبيت المكتبات الخارجية
 {: .no_toc .text-delta }
 
 ```bash
@@ -41,55 +41,55 @@ pip install evomsa
 
 ---
 
-# Introduction
+# المقدمة
 
-Text Categorization is an NLP task that deals with creating algorithms capable of identifying the category of a text from a set of predefined categories. For example, sentiment analysis belongs to this task, and the aim is to detect the polarity (e.g., positive, neutral, or negative) of a text. Furthermore, different NLP tasks that initially seem unrelated to this problem can be formulated as a classification one such as question answering and sentence entailment, to mention a few. 
+تصنيف النصوص (Text Categorization) هو إحدى مهام معالجة اللغة الطبيعية (NLP) التي تتعامل مع إنشاء خوارزميات قادرة على تحديد فئة النص من بين مجموعة من الفئات المحددة مسبقًا. على سبيل المثال، ينتمي تحليل المشاعر (Sentiment Analysis) إلى هذه المهمة، والهدف منه هو فحص وتحديد قطبية النص (مثل: إيجابي، محايد، أو سلبي). علاوة على ذلك، فإن المهام المختلفة في NLP التي تبدو غير مرتبطة بهذه المشكلة في البداية يمكن صياغتها كمسألة تصنيف، مثل الإجابة عن الأسئلة (Question Answering) والاستلزام اللغوي (Sentence Entailment)، على سبيل المثال لا الحصر.
 
-Text Categorization can be tackled from different perspectives; the one followed here is to treat it as a supervised learning problem. As in any supervised learning problem, the starting point is a set of pairs, where the first element of the pair is the input and the second one corresponds to the output. Let $$\mathcal D = \{(\text{text}_i, y_i) \mid i=1,\ldots, N\}$$ where $$y \in \{c_1, \ldots c_K\}$$ and $$\text{text}_i$$ is a text. 
+يمكن معالجة تصنيف النصوص من وجهات نظر مختلفة؛ والمنهج المتبع هنا هو التعامل معها كـ مسألة تعلم خاضع للإشراف (Supervised Learning). وكما هو الحال في أي مسألة تعلم خاضع للإشراف، فإن نقطة البداية هي مجموعة من الأزواج، حيث يكون العنصر الأول هو المدخل والعنصر الثاني يمثل المخرج. لنفرض أن $$\mathcal D = \{(\text{text}_i, y_i) \mid i=1,\ldots, N\}$$ حيث $$y \in \{c_1, \ldots c_K\}$$ و $$\text{text}_i$$ هو النص.
 
-Supervised learning problems can be seen as finding a mapping function from inputs to outputs. The tool could be an [optimization](/NLP-Course/topics/02Vocabulary/#sec:optimization) algorithm capable of finding the function that minimizes a particular loss function, e.g., $$L$$. 
+يمكن النظر إلى مسائل التعلم الخاضع للإشراف كـ إيجاد دالة تعيين من المدخلات إلى المخرجات. يمكن أن تكون الأداة عبارة عن خوارزمية [تحسين](/NLP-Course-Ar/topics/02Vocabulary.html#sec:optimization) قادرة على العثور على الدالة التي تقرر ودالة خسارة معينة، مثل $$L$$.
 
 $$\min_{g \in \Omega} \sum_{(\mathbf x, y) \in \mathcal D} L(y, g(\mathbf x)),$$
 
-where $$\Omega$$ is the search space of the feasible mapping functions.
+حيث $$\Omega$$ هو فضاء البحث عن دوال التعيين الممكنة.
 
-Additionally, if one is also interested in measuring the uncertainty, the path relies on probability. In this latter scenario, one approach is to assume the form of the conditional probability, i.e., $$\mathbb P(\mathcal Y=k \mid \mathcal X=x)=f_k(x)$$ where $$f_k$$ is the $$k$$-th value of $$f: \mathcal X \rightarrow [0, 1]^K$$ which encodes a probability mass function. For the case of a binary classification problem the function is $$f: \mathcal X \rightarrow [0, 1]$$. As can be seen, in this scenario, an adequate distribution is [Bernoulli](/NLP-Course/topics/03Collocations/#sec:bernoulli), where function $$f$$ takes the place of the parameter of the distribution, that is, $$\mathcal Y \sim \textsf{Bernoulli}(f(\mathcal X))$$; for more labels, the Categorical distribution can be used. On the other hand, the complement path is to rely on Bayes' theorem. 
+بالإضافة إلى ذلك، إذا كان المرء مهتمًا أيضًا بقياس درجة عدم اليقين، فإن المسار يعتمد على الاحتمالات. في هذا السيناريو الأخير، يتمثل أحد المناهج في فرض شكل الاحتمال الشرطي، أي $$\mathbb P(\mathcal Y=k \mid \mathcal X=x)=f_k(x)$$ حيث $$f_k$$ هي القيمة الرقمية $$k$$ لـ $$f: \mathcal X \rightarrow [0, 1]^K$$ والتي ترمز دالة كتل الاحتمال. بالنسبة لحالة مسألة التصنيف الثنائي، تكون الدالة $$f: \mathcal X \rightarrow [0, 1]$$. وكما يتضح، في هذا السيناريو، فإن التوزيع المناسب هو [برنولي (Bernoulli)](/NLP-Course-Ar/topics/03Collocations.html#sec:bernoulli)، حيث تأخذ الدالة $$f$$ مكان معلمة التوزيع، أي $$\mathcal Y \sim \textsf{Bernoulli}(f(\mathcal X))$$؛ ولعدد أكبر من التسميات، يمكن استخدام التوزيع الفئوي (Categorical distribution). من ناحية أخرى، يعتمد المسار المكمل على مبرهنة بايز (Bayes' theorem).
 
-# Bayes' theorem
+# مبرهنة بايز (Bayes' theorem)
 {: #sec:bayes-theorem }
 
-The bivariate distribution $$\mathbb P(\mathcal X, \mathcal Y)$$ can be expressed using the [conditional probability](/topics/04NGramLM/#sec:conditional-probability) as:
+يمكن التعبير عن التوزيع ثنائي المتغير $$\mathbb P(\mathcal X, \mathcal Y)$$ باستخدام [الاحتمال الشرطي](/NLP-Course-Ar/topics/04NGramLM.html#sec:conditional-probability) كـ:
 
 $$\begin{eqnarray}
 \mathbb P(\mathcal X, \mathcal Y) &=& \mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)\\
 \mathbb P(\mathcal X, \mathcal Y) &=& \mathbb P(\mathcal Y \mid \mathcal X) \mathbb P(\mathcal X).
 \end{eqnarray}$$
 
-These elements can be combined to obtain Bayes' theorem following the next steps: 
+يمكن دمج هذه العناصر للحصول على مبرهنة بايز باتباع الخطوات التالية:
 
 $$\begin{eqnarray}
 \mathbb P(\mathcal Y \mid \mathcal X) \mathbb P(\mathcal X) &=& \mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)\\
 \mathbb P(\mathcal Y \mid \mathcal X)  &=& \frac{\mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)}{\mathbb P(\mathcal X)},
 \end{eqnarray}$$
 
-where $$\mathbb P(\mathcal Y \mid \mathcal X)$$ is the **posterior probability**, $$\mathbb P(\mathcal X \mid \mathcal Y)$$ corresponds to the **likelihood**, $$\mathbb P(\mathcal Y)$$ is the **prior**, and $$\mathbb P(\mathcal X)$$ is the **evidence**. The evidence can be expressed as $$\mathbb P(\mathcal X) = \sum_y \mathbb P(\mathcal X \mid \mathcal y) \mathbb P(\mathcal y)$$ which corresponds to the marginal $$\mathbb P(\mathcal X)$$ using the conditional probability; it can be observed that this term acts as a normalization constant.
+حيث $$\mathbb P(\mathcal Y \mid \mathcal X)$$ هو **الاحتمال البعدي (Posterior probability)**، و $$\mathbb P(\mathcal X \mid \mathcal Y)$$ يمثل **الاحتمالية / الإمكانية (Likelihood)**، و $$\mathbb P(\mathcal Y)$$ هو **الاحتمال القبلي (Prior)**، و $$\mathbb P(\mathcal X)$$ هو **الدليل (Evidence)**. يمكن التعبير عن الدليل كـ $$\mathbb P(\mathcal X) = \sum_y \mathbb P(\mathcal X \mid \mathcal y) \mathbb P(\mathcal y)$$ والذي يتوافق مع الهامش $$\mathbb P(\mathcal X)$$ باستخدام الاحتمال الشرطي؛ ويمكن ملاحظة أن هذا المصطلح يعمل كـ ثابت معايرة (Normalization constant).
 
-The Bayes' theorem has two features that make it amenable to addressing classification problems. The first is that it is a generative model; besides tackling the classification problem, the model can be used to generate the data, i.e., the model learns the distribution of the dataset. 
+تتمتع مبرهنة بايز بميزتين تجعلانها مناسبة لمعالجة مسائل التصنيف. الأولى هي أنها نموذج توليدي (Generative model)؛ فإلى جانب معالجة مسألة التصنيف، يمكن استخدام النموذج لتوليد البيانات، أي أن النموذج يتعلم توزيع مجموعة البيانات.
 
-The second characteristic is that the likelihood is a probability distribution given any class. Consequently, the problem is to estimate $$K$$ different distribution using the subset of the training set belonging to each different class. On the other hand, the prior is the estimated probability of each class, and the evidence can be estimated using the previous two values. 
+والسمة الثانية هي أن الاحتمالية (Likelihood) عبارة عن توزيع احتمالي لأي فئة. وبالتالي، تتمثل المسألة في تقدير $$K$$ من التوزيعات المختلفة باستخدام المجموعة الفرعية من مجموعة التدريب التي تنتمي إلى كل فئة مختلفة. من ناحية أخرى، فإن الاحتمال القبلي هو الاحتمال المقدر لكل فئة، ويمكن تقدير الدليل باستخدام القيمتين السابقين.
 
-## Normal Distribution
+## التوزيع الطبيعي (Normal Distribution)
 
-In order to illustrate the process of computing the posterior, the following example uses two normals, each one corresponding to a different class; the red one is the negative class, and blue is used to depict the positive one.
+من أجل توضيح عملية حساب الاحتمال البعدي، يستخدم المثال التالي توزيعين طبيعيين، كل منهما يتوافق مع فئة مختلفة؛ الأحرف الحمراء للفئة السلبية، والأزرق لتمثيل الفئة الإيجابية.
 
 ```python
 pos = norm(loc=3, scale=2.5)
 neg = norm(loc=-0.5, scale=0.75)
 ```
 
-![Two Normals](/NLP-Course/assets/images/two_normals.png)
+![Two Normals](/NLP-Course-Ar/assets/images/two_normals.png)
 
-The normal associated with the negative class is sampled 100 times; however, the sampled elements in the tail corresponding to a mass lower than 0.05 or higher than 0.95 are discarded. The distribution of the positive class is sampled 1000 times using the constraint that the points in the interval of the negative class are not considered.  
+يتم أخذ عينات من التوزيع الطبيعي المرتبط بالفئة السلبية 100 مرة؛ ومع ذلك، فإن العناصر التي تم أخذ عينات منها في الذيل والتي تتوافق مع كتلة أقل من 0.05 أو أعلى من 0.95 يتم التخلص منها. يتم أخذ عينات من توزيع الفئة الإيجابية 1000 مرة باستخدام قيد أن النقاط في الفترة الزمنية للفئة السلبية لا تؤخذ بعين الاعتبار.
 
 ```python
 _min = neg.ppf(0.05)
@@ -98,18 +98,18 @@ D = [(x, 0) for x in neg.rvs(100) if x >= _min and x <= _max]
 D += [(x, 1) for x in pos.rvs(1000) if x < _min or x > _max]
 ```
 
-The following picture shows the distribution of the positive and negative classes; it can be observed that the two classes are separated by the constraints imposed. These points will be used to illustrate the procedure to estimate the posterior distribution given a dataset; the dataset is $$\mathcal D=\{(x_i, y_i) \mid i=1, \ldots, N\}$$ where $$x_i \in \mathbb R$$ and $$y_i \in \{0, 1\}$$.
+توضح الصورة التالية توزيع الفئتين الإيجابية والسلبية؛ ويمكن ملاحظة أن الفئتين مفصولتان بالقيود المفروضة. ستُستخدم هذه النقاط لتوضيح إجراء تقدير التوزيع البعدي بمعلومية مجموعة البيانات؛ مجموعة البيانات هي $$\mathcal D=\{(x_i, y_i) \mid i=1, \ldots, N\}$$ حيث $$x_i \in \mathbb R$$ و $$y_i \in \{0, 1\}$$.
 
-![Two Normal Samples](/NLP-Course/assets/images/two_normal_samples.png)
+![Two Normal Samples](/NLP-Course-Ar/assets/images/two_normal_samples.png)
 
-The first step is to estimate the likelihood, i.e., $$\mathbb P(\mathcal X \mid \mathcal Y)$$ where $$\mathcal Y=1$$ and $$\mathcal Y=0$$. It is assumed that the likelihood is normally distributed; thus, it requires estimating the mean and the standard deviation, which can be done with the following code. 
+الخطوة الأولى هي تقدير الاحتمالية (Likelihood)، أي $$\mathbb P(\mathcal X \mid \mathcal Y)$$ حيث $$\mathcal Y=1$$ و $$\mathcal Y=0$$. يُفترض أن الاحتمالية موزعة طبيعيًا؛ وبالتالي، يتطلب الأمر تقدير المتوسط والإنحراف المعياري، وهو ما يمكن القيام به باستخدام الكود التالي.
 
 ```python
 l_pos = norm(*norm.fit([x for x, k in D if k == 1]))
 l_neg = norm(*norm.fit([x for x, k in D if k == 0]))
 ```
 
-The second step is to compute the prior, i.e., $$\mathbb P(\mathcal Y)$$ which corresponds to estimating the parameters of a Categorical distribution; the following code relies on the use of `np.unique` to estimate them.
+الخطوة الثانية هي حساب الاحتمال القبلي (Prior)، أي $$\mathbb P(\mathcal Y)$$ والذي يتوافق مع تقدير معلمات التوزيع الفئوي؛ يعتمد الكود التالي على استخدام `np.unique` لتقديرها.
 
 ```python
 _, priors = np.unique([k for _, k in D], return_counts=True)
@@ -118,15 +118,15 @@ prior_pos = priors[1] / N
 prior_neg = priors[0] / N
 ```
 
-The next step requires computing the unnormalized posterior $$\mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)$$; in the following example, this term is computed for all the inputs in $$\mathcal D$$. The first line retrieves the inputs, i.e., $$x$$. The second and third lines compute $$\mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)$$ for the positive and negative class.
+تتطلب الخطوة التالية حساب الاحتمال البعدي غير المعاير $$\mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)$$; في المثال التالي، يتم حساب هذا المصطلح لجميع المدخلات في $$\mathcal D$$. يسترجع السطر الأول المدخلات، أي $$x$$. يحسب السطران الثاني والثالث $$\mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)$$ للفئة الإيجابية والسلبية.
 
-```
+```python
 x = np.array([x for x, _ in D])
 post_pos = l_pos.pdf(x) * prior_pos
 post_neg = l_neg.pdf(x) * prior_neg
 ```
 
-The final steps are to calculate the evidence, $$\mathbb P(\mathcal X)$$ and use it to normalize $$\mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)$$. The first line computes the evidence, and the second and four lines normalize the posterior. 
+الخطوات النهائية هي حساب الدليل، $$\mathbb P(\mathcal X)$$ واستخدامه لمعايرة $$\mathbb P(\mathcal X \mid \mathcal Y) \mathbb P(\mathcal Y)$$. يحسب السطر الأول الدليل، والسطران الثاني والأرابع يعايران الاحتمال البعدي.
 
 ```python
 evidence = post_pos + post_neg
@@ -134,31 +134,31 @@ post_pos /= evidence
 post_neg /= evidence
 ```
 
-The following figure presents the posterior for each class; it can be observed that the most probable class swaps from positive to negative in the cross of the two lines. 
+يقدم الشكل التالي الاحتمال البعدي لكل فئة؛ ويمكن ملاحظة أن الفئة الأكثر احتمالاً تتغير من الإيجابية إلى السلبية في تقاطع الخطين.
 
-![Posterior of Two Classes](/NLP-Course/assets/images/two_classes_posterior.png)
+![Posterior of Two Classes](/NLP-Course-Ar/assets/images/two_classes_posterior.png)
 
-Once the posterior is estimated, it can be used to predict the class of $$x$$; given that the truth class of any $$x$$ in $$\mathcal D$$ is known, it is possible to know when the classifier makes a mistake. The following figure depicts the data in $$\mathcal D$$, marking in red those points where the classifier and truth class differs. The function to predict the class can be implemented with the following code; it is worth mentioning that it is not needed to normalize the posterior because the interest is only on the class. 
+بمجرد تقدير الاحتمال البعدي، يمكن استخدامه للتنبؤ بفئة $$x$$؛ بالنظر إلى أن الفئة الحقيقية لأي $$x$$ في $$\mathcal D$$ معروفة، فمن الممكن معرفة متى يرتكب المصنف خطأً. يوضح الشكل التالي البيانات في $$\mathcal D$$، مع تعليم النقاط باللون الأحمر حيث تختلف فئة المصنف عن الفئة الحقيقية. يمكن تنفيذ دالة التنبؤ بالفئة باستخدام الكود التالي؛ وتجدر الإشارة إلى أنه ليس من الضروري معايرة الاحتمال البعدي لأن الاهتمام ينصب فقط على الفئة.
 
 ```python
 klass = lambda x: 1 if l_pos.pdf(x) * prior_pos > l_neg.pdf(x) * prior_neg else 0
 ```
 
-![Posterior Errors](/NLP-Course/assets/images/two_classes_posterior_error.png)
+![Posterior Errors](/NLP-Course-Ar/assets/images/two_classes_posterior_error.png)
 
-## Multivariate Normal Distribution
+## التوزيع الطبيعي متعدد المتغيرات (Multivariate Normal Distribution)
 
-An equivalent procedure can be done for multivariate Normal distribution. The following figure shows an example of two multivariate distributions; one represents a positive class (blue), and the other corresponds to the negative (red). The dataset containing the pairs, $$(\mathbf x, y)$$, is found on the variable `D`. 
+يمكن إجراء إجراء مكافئ للتوزيع الطبيعي متعدد المتغيرات. يوضح الشكل التالي مثالاً لتوزيعين متعدد المتغيرات؛ أحدهما يمثل فئة إيجابية (أزرق)، والآخر يتوافق مع الفئة السلبية (أحمر). توجد مجموعة البيانات التي تحتوي على الأزواج، $$(\mathbf x, y)$$، في المتغير `D`.
 
-![Two Multivariate Normals](/NLP-Course/assets/images/two_classes_multivariate.png)
+![Two Multivariate Normals](/NLP-Course-Ar/assets/images/two_classes_multivariate.png)
 
 ```python
 D = load_model(join('dataset', 'two_classes_multivariate.gz'))
 ```
 
-Dataset $$\mathcal D$$ can be used to estimate the posterior distribution, where the first step is to estimate the parameters of the likelihood, one set of parameters for each class. The second step is to calculate the parameters of the prior. The sum of the product of these two components corresponds to the evidence, which provides all elements to compute the posterior distribution.
+يمكن استخدام مجموعة البيانات $$\mathcal D$$ لتقدير التوزيع البعدي، حيث الخطوة الأولى هي تقدير معلمات الاحتمالية (Likelihood)، مجموعة واحدة من المعلمات لكل فئة. الخطوة الثانية هي حساب معلمات الاحتمال القبلي. يتوافق مجموع حاصل ضرب هذين المكونين مع الدليل، الذي يوفر جميع العناصر لحساب التوزيع البعدي.
 
-The following code computes the likelihood for the positive and negative class.
+يحسب الكود التالي الاحتمالية للفئة الإيجابية والسلبية.
 
 ```python
 l_pos_m = np.mean(np.array([x for x, y in D if y == 1]), axis=0)
@@ -169,16 +169,16 @@ l_neg_cov = np.cov(np.array([x for x, y in D if y == 0]).T)
 l_neg = multivariate_normal(mean=l_neg_m, cov=l_neg_cov)
 ```
 
-Once the likelihood has been estimated, it is straightforward to estimate the prior and the evidence and, with that, be able to compute the posterior probability. The posterior distribution can be used to predict the class for each point in $$\mathcal D$$. The following figure shows in red the points in $$\mathcal D$$ where the truth class is different from the predicted posterior distribution. 
+بمجرد تقدير الاحتمالية، فمن المباشر تقدير الاحتمال القبلي والدليل، ومع ذلك، تكون قادرًا على حساب الاحتمال البعدي. يمكن استخدام التوزيع البعدي للتنبؤ بفئة كل نقطة في $$\mathcal D$$. يوضح الشكل التالي باللون الأحمر النقاط في $$\mathcal D$$ حيث تختلف الفئة الحقيقية عن التوزيع البعدي المتنبأ به.
 
-![Classification Errors in Two Multivariate Normals](/NLP-Course/assets/images/two_classes_multivariate_error.png)
+![Classification Errors in Two Multivariate Normals](/NLP-Course-Ar/assets/images/two_classes_multivariate_error.png)
 
-## Categorical Distribution
+## التوزيع الفئوي (Categorical Distribution)
 {: #sec:categorical-distribution }
 
-The description of Bayes’ theorem continues with an example of a Categorical distribution. A Categorical distribution can simulate the drawn of $$K$$ events that can be encoded as characters, and $$\ell$$ repetitions can be represented as a sequence of characters. Consequently, the distribution can illustrate the generation sequences associated with different classes, e.g., positive or negative.
+تستمر صياغة مبرهنة بايز بمثال للتوزيع الفئوي. يمكن للتوزيع الفئوي محاكاة سحب $$K$$ من الأحداث التي يمكن ترميزها كأحرف، ويمكن تمثيل تكرارات $$\ell$$ كتسلسل من الأحرف. وبالتالي، يمكن للتوزيع توضيح متواليات التوليد المرتبطة بفئات مختلفة، مثل الإيجابية أو السلبية.
 
-The first step is to create the dataset. As done previously, two distributions are defined, one for each class; it can be observed that each distribution has different parameters. The second step is to sample these distributions; the distributions are sampled 1000 times with the following procedure. Each time, a random variable representing the number of outcomes taken from each distribution is drawn from a Normal $$\mathcal N(15, 3)$$ and stored in the variable `length.` The random variable indicates the number of outcomes for each Categorical distribution; the results are transformed into a sequence, associated to the label corresponding to the positive and negative class, and stored in the list `D.`
+الخطوة الأولى هي إنشاء مجموعة البيانات. كما تم عمله سابقًا، يتم تعريف توزيعين، واحد لكل فئة؛ ويمكن ملاحظة أن كل توزيع له معلمات مختلفة. الخطوة الثانية هي أخذ عينات من هذه التوزيعات؛ يتم أخذ عينات من التوزيعات 1000 مرة بالإجراء التالي. في كل مرة، يتم سحب متغير عشوائي يمثل عدد المخرجات المأخوذة من كل توزيع من توزيع طبيعي $$\mathcal N(15, 3)$$ ويخزن في المتغير `length.` يشير المتغير العشوائي إلى عدد المخرجات لكل توزيع فئوي؛ وتتحول النتائج إلى تسلسل، مرتبط بالتسمية المقابلة للفئة الإيجابية والسلبية، وتخزن في القائمة `D.`
 
 ```python
 pos = multinomial(1, [0.20, 0.20, 0.35, 0.25])
@@ -192,16 +192,16 @@ for l in length.rvs(size=1000):
     D.append((id2w(neg.rvs(round(l))), 0))
 ```
 
-The following table shows four examples of this process; the first column contains the sequence, and the second the associated label.
+يوضح الجدول التالي أربعة أمثلة لهذه العملية؛ يحتوي العمود الأول على التسلسل، والعمود الثاني على التسمية المرتبطة.
 
-|Text          |Label    |
+|النص (Text)          |التسمية (Label)    |
 |--------------|---------|
 |x w x x z w y | positive       |
 |y w z z z x w | negative       |
 |z x x x z x z w x w | positive |
 |x w z w y z z z z w | negative |
 
-As done previously, the first step is to compute the likelihood given that dataset; considering that the data comes from a Categorical distribution, the procedure to estimate the parameters is similar to the ones used to estimate the prior. The following code estimates the data parameters corresponding to the positive class. It can be observed that the parameters estimated are similar to the ones used to generate the dataset. 
+كما تم عمله سابقًا، فإن الخطوة الأولى هي حساب الاحتمالية بمعلومية مجموعة البيانات؛ بالنظر إلى أن البيانات تأتي من توزيع فئوي، فإن إجراء تقدير المعلمات يماثل الإجراءات المستخدمة لتقدير الاحتمال القبلي. يقدر الكود التالي معلمات البيانات المقابلة للفئة الإيجابية. يمكن ملاحظة أن المعلمات المقدرة تشبه المعلمات المستخدمة لتوليد مجموعة البيانات.
 
 ```python
 D_pos = []
@@ -213,7 +213,7 @@ l_pos
 array([0.25489421, 0.33854064, 0.20773186, 0.1988333 ])
 ```
 
-An equivalent procedure is performed to calculate the likelihood of the negative class.
+يتم إجراء إجراء مكافئ لحساب احتمالية الفئة السلبية.
 
 ```python
 D_neg = []
@@ -222,7 +222,7 @@ _, l_neg = np.unique(D_neg, return_counts=True)
 l_neg = l_neg / l_neg.sum()
 ```
 
-The prior is estimated with the following code, equivalent to the one used on all the examples seen so far. 
+يتم تقدير الاحتمال القبلي بالكود التالي، وهو مكافئ للكود المستخدم في جميع الأمثلة التي شوهدت حتى الآن.
 
 ```python
 _, priors = np.unique([k for _, k in D], return_counts=True)
@@ -231,7 +231,7 @@ prior_pos = priors[1] / N
 prior_neg = priors[0] / N
 ```
 
-Once the parameters have been identified, these can be used to predict the class of a given sequence. The first step is to compute the likelihood, e.g., $$\mathbb P($$w w x z$$\mid \mathcal Y)$$. It can be observed that the sequence needs to be transformed into tokens which can be done with the `split` method. Then, the token is converted into an index using the mapping `w2id`; once the index is retrieved, it can be used to obtain the parameter associated with the word. The likelihood is the product of all the probabilities; however, this product is computed in log space. 
+بمجرد تحديد المعلمات، يمكن استخدامها للتنبؤ بفئة تسلسل معين. الخطوة الأولى هي حساب الاحتمالية، على سبيل المثال $$\mathbb P($$w w x z$$\mid \mathcal Y)$$. يمكن ملاحظة أن التسلسل بحاجة إلى التحول إلى رموز وهو ما يمكن القيام به باستخدام الدالة `split`. ثم يتم تحويل الرمز إلى فهرس باستخدام التعيين `w2id`؛ وبمجرد استرجاع الفهرس، يمكن استخدامه للحصول على المعلمة المرتبطة بالكلمة. الاحتمالية هي حاصل ضرب جميع الاحتمالات؛ ومع ذلك، يتم حساب حاصل الضرب هذا في الفضاء اللوغاريتمي.
 
 ```python
 def likelihood(params, txt):
@@ -241,7 +241,7 @@ def likelihood(params, txt):
     return np.exp(tot)
 ```
 
-The likelihood combined with the prior for all the classes produces the evidence, which subsequently is used to calculate the posterior distribution. The posterior is then used to predict the class for all the sequences in $$\mathcal D$$. The predictions are stored in the variable `hy`.
+تنتج الاحتمالية المدمجة مع الاحتمال القبلي لجميع الفئات الدليل، والذي يُستخدم لاحقًا لحساب التوزيع البعدي. ثم يُستخدم الاحتمال البعدي للتنبؤ بالفئة لجميع المتواليات في $$\mathcal D$$. يتم تخزين التنبؤات في المتغير `hy`.
 
 ```python
 post_pos = [likelihood(l_pos, x) * prior_pos for x, _ in D]
@@ -252,11 +252,11 @@ post_neg /= evidence
 hy = np.where(post_pos > post_neg, 1, 0)
 ```
 
-# Accuracy
+# الدقة (Accuracy)
 
-In previous examples, figures have been used to depict the classification errors; however, it is not practical to rely on a figure to evaluate the classifier's performance. Instead, one can use a performance measure to assess the classifier's quality. The first performance measure revised is the accuracy. The accuracy is the ratio of correct predictions. 
+في الأمثلة السابقة، تم استخدام الأشكال لتصوير أخطاء التصنيف؛ ومع ذلك، ليس من العملي الاعتماد على شكل لتقييم أداء المصنف. بدلاً من ذلك، يمكن استخدام مقياس الأداء لتقييم جودة المصنف. مقياس الأداء الأول الذي تم مراجعته هو الدقة (Accuracy). الدقة هي نسبة التنبؤات الصحيحة.
 
-The accuracy of the classifier trained previously is computed with the following code, where variable `hy` contains the predictions and `y` contains the classes taken from $$\mathcal D$$.
+تتم حساب دقة المصنف المدرب سابقًا بالكود التالي، حيث يحتوي المتغير `hy` على التنبؤات ويحتوي `y` على الفئات المأخوذة من $$\mathcal D$$.
 
 ```python
 y = np.array([y for _, y in D])
@@ -264,11 +264,11 @@ y = np.array([y for _, y in D])
 0.761
 ```
 
-# Confidence Interval
+# فترة الثقة (Confidence Interval)
 
-Like any other performance measure applied in this domain, the accuracy can change when the experiment is repeated; sampling the distributions and creating a new dataset would produce a different accuracy. Therefore, to have a complete picture of the classifier's performance, it is needed to estimate the difference values this measure can have under the same circumstances. One approach is to calculate the confidence interval of the performance measure used. A standard method to compute the confidence interval assumes that it is normally distributed when the size of $$\mathcal D$$ tends to infinity; in this condition, the confidence interval is $$(\hat \theta - z_{\frac{\alpha}{2}}\hat{\textsf{se}}, \hat \theta + z_{\frac{\alpha}{2}}\hat{\textsf{se})}$$, where $$\hat \theta$$ is the point estimation, e.g., the accuracy, $$z_{\frac{\alpha}{2}}$$ is the point where the mass is $$1-\frac{\alpha}{2}$$, and $$\hat{\textsf{se}} = \sqrt{\mathbb V(\hat \theta)}$$ is the standard error.  
+مثل أي مقياس أداء آخر يُطبق في هذا المجال، يمكن أن تتغير الدقة عند تكرار التجربة؛ فإن أخذ عينات من التوزيعات وإنشاء مجموعة بيانات جديدة من شأنه أن ينتج دقة مختلفة. لذلك، للحصول على صورة كاملة لأداء المصنف، يلزم تقدير القيم المختلفة التي يمكن أن يتخذها هذا المقياس تحت نفس الظروف. أحد المناهج هو حساب فترة الثقة (Confidence interval) لمقياس الأداء المستخدم. تفترض الطريقة القياسية لحساب فترة الثقة أنها موزعة طبيعيًا عندما يؤول حجم $$\mathcal D$$ إلى المالانهاية؛ في هذه الحالة، تكون فترة الثقة هي $$(\hat \theta - z_{\frac{\alpha}{2}}\hat{\textsf{se}}, \hat \theta + z_{\frac{\alpha}{2}}\hat{\textsf{se}})$$, حيث $$\hat \theta$$ هي نقطة التقدير، مثل الدقة، و $$z_{\frac{\alpha}{2}}$$ هي النقطة التي تكون فيها الكتلة $$1-\frac{\alpha}{2}$$, و $$\hat{\textsf{se}} = \sqrt{\mathbb V(\hat \theta)}$$ هو الخطأ المعياري.
 
-The accuracy is the sum of $$N$$ Bernoulli trials, therefore $$\sqrt{\mathbb V(\hat \theta)}$$ is $$\sqrt{\frac{p(1-p)}{N}}$$ where $$p$$ is the accuracy. Using these elements the confidence interval for the accuracy is computed as follows.
+الدقة هي مجموع محاولات برنولي $$N$$، وبالتالي فإن $$\sqrt{\mathbb V(\hat \theta)}$$ هي $$\sqrt{\frac{p(1-p)}{N}}$$ حيث $$p$$ هي الدقة. وباستخدام هذه العناصر، تتم حساب فترة الثقة للدقة كما يلي.
 
 ```python
 p = (hy == y).mean()
@@ -279,9 +279,9 @@ ci
 (0.7423093514177674, 0.7796906485822326)
 ```
 
-The standard error of the accuracy can be derived using the identity $$\mathbb V(\sum_i a_i \mathcal X_i) = \sum_i a_i^2 \mathbb V(\mathcal X_i)$$ where random variables $$\mathcal X_i$$ are independent and $$a_i$$ is a constant. On the other hand, the accuracy can be seen as the outcome of a random variable where $$1$$ indicates the correct prediction and $$0$$ represents an error, then the accuracy is the sum of these random variables. Let $$\mathcal X_i$$ represent the outcome of the $$i$$-th prediction, then the accuracy is $$\frac{1}{N} \sum_i^N X_i$$. The variance is $$\mathbb V(\frac{1}{N} \sum_i^N X_i) = \sum_i \frac{1}{N^2} \mathbb V(\mathcal X_i)$$; the variance of a Bernoulli distribution with parameter $$p$$ is $$p(1-p)$$, consequently $$\sum_i \frac{1}{N^2} \mathbb V(\mathcal X_i) = \frac{1}{N^2} \sum_i p(1-p) = \frac{1}{N}p(1-p)$$, which completes the derivation.
+يمكن اشتقاق الخطأ المعياري للدقة باستخدام المطابقة $$\mathbb V(\sum_i a_i \mathcal X_i) = \sum_i a_i^2 \mathbb V(\mathcal X_i)$$ حيث تكون المتغيرات العشوائية $$\mathcal X_i$$ مستقلة و $$a_i$$ ثابت. من ناحية أخرى، يمكن النظر إلى الدقة على أنها مخرج لمتغير عشوائي حيث تشير $$1$$ إلى التنبؤ الصحيح و $$0$$ تمثل خطأً، ثم تكون الدقة هي مجموع هذه المتغيرات العشوائية. لندع $$\mathcal X_i$$ يمثل مخرج التنبؤ $$i$$، فتكون الدقة هي $$\frac{1}{N} \sum_i^N X_i$$. والتباين هو $$\mathbb V(\frac{1}{N} \sum_i^N X_i) = \sum_i \frac{1}{N^2} \mathbb V(\mathcal X_i)$$; وتباين توزيع برنولي بالمعلمة $$p$$ هو $$p(1-p)$$, وبالتالي فإن $$\sum_i \frac{1}{N^2} \mathbb V(\mathcal X_i) = \frac{1}{N^2} \sum_i p(1-p) = \frac{1}{N}p(1-p)$$, وهو ما يكمل الاشتقاق.
 
-There are performance measures that it is difficult or unfeasible to analytical obtain $$\sqrt{\mathbb V(\hat \theta)}$$, for those cases, one can use a bootstrapping method to estimate it, the following code shows the usage of a method that implements the bootstrap percentile interval when the performance measure is the accuracy. However, it can be observed that the measure is a parameter of the method, so it works for any performance measure. 
+هناك مقاييس أداء يكون من الصعب أو غير العملي الحصول على $$\sqrt{\mathbb V(\hat \theta)}$$ لها تحليلياً، وفي هذه الحالات، يمكن استخدام طريقة التمهيد (Bootstrapping) لتقديرها، ويظهر الكود التالي استخدام طريقة تنفذ فترة النسبة المئوية للتمهيد عندما يكون مقياس الأداء هو الدقة. ومع ذلك، يمكن ملاحظة أن المقياس هو معلمة بالطريقة، لذا فهو يعمل مع أي مقياس أداء.
 
 ```python
 ci = bootstrap_confidence_interval(y, hy, alpha=0.05,
@@ -290,18 +290,18 @@ ci
 (0.7415, 0.7797625)
 ```
 
-# Text Categorization - Categorical Distribution
+# تصنيف النصوص - التوزيع الفئوي (Text Categorization - Categorical Distribution)
 {: #sec:tc-categorical }
 
-The approach followed on text categorization is to treat it as supervised learning problem where the starting point is a dataset $$\mathcal D = \{(\text{text}_i, y_i) \mid i=1,\ldots, N\}$$ where $$y \in \{c_1, \ldots c_K\}$$ and $$\text{text}_i$$ is a text. For example, the next code uses a toy sentiment analysis dataset with four classes: negative (N), neutral (NEU), absence of polarity (NONE), and positive (P).
+المنهج المتبع في تصنيف النصوص هو التعامل معها كمسألة تعلم خاضع للإشراف حيث نقطة البداية هي مجموعة بيانات $$\mathcal D = \{(\text{text}_i, y_i) \mid i=1,\ldots, N\}$$ حيث $$y \in \{c_1, \ldots c_K\}$$ و $$\text{text}_i$$ هو النص. على سبيل المثال، يستخدم الكود التالي مجموعة بيانات توضيحية لتحليل المشاعر بأربع فئات: سلبي (N)، محايد (NEU)، غياب القطبية (NONE)، وإيجابي (P).
 
 ```python
 D = [(x['text'], x['klass']) for x in tweet_iterator(TWEETS)]
 ```
 
-As can be observed, $$\mathcal D$$ is equivalent to the one used in the [Categorical Distribution](#sec:categorical-distribution) example. The difference is that sequence of letters is changed with a sentence. Nonetheless, a feasible approach is to obtain the tokens using the `split` method. Another approach is to retrieve the tokens using a Tokenizer, as covered in the [Text Normalization](/NLP-Course/topics/05TextNormalization) Section. 
+كما يمكن ملاحظته، فإن $$\mathcal D$$ تكافئ تلك المستخدمة في مثال [التوزيع الفئوي](#sec:categorical-distribution). الفرق هو أن تسلسل الأحرف يتغير بجملة. ومع ذلك، فإن المنهج الممكن هو الحصول على الرموز باستخدام الدالة `split`. ومنهج آخر هو استرجاع الرموز باستخدام المحلل اللفظي (Tokenizer)، كما غطينا في قسم [توحيد النصوص](/NLP-Course-Ar/topics/05TextNormalization.html).
 
-The following code uses the `TextModel` class to tokenize the text using words as the tokenizer; the tokenized text is stored in the variable `D.`
+يستخدم الكود التالي الفئة `TextModel` لتقطيع النص باستخدام الكلمات كمحلل لفظي؛ ويتم تخزين النص المقطع في المتغير `D.`
 
 ```python
 tm = TextModel(token_list=[-1])
@@ -309,7 +309,7 @@ tok = tm.tokenize
 D = [(tok(x), y) for x, y in D]
 ```
 
-Before estimating the likelihood parameters, it is needed to encode the tokens using an index; by doing it, it is possible to store the parameters in an array and compute everything `numpy` operations. The following code encodes each token with a unique index; the mapping is in the dictionary `w2id`. 
+قبل تقدير معلمات الاحتمالية، يتطلب الأمر ترميز الرموز باستخدام فهرس؛ وبتنفيذ ذلك، من الممكن تخزين المعلمات في مصفوفة وحساب كل شيء بعمليات `numpy`. يرمز الكود التالي كل رمز بفهرس فريد؛ التعيين موجود في القاموس `w2id`.
 
 ```python
 words = set()
@@ -317,7 +317,7 @@ words = set()
 w2id = {v: k for k, v in enumerate(words)}
 ```
 
-Previously, the classes have been represented using natural numbers. The positive class has been associated with the number $$1$$, whereas the negative class with $$0$$. However, in this dataset, the classes are strings. It was decided to encode them as numbers to facilitate subsequent operations. The encoding process can be performed simultaneously with the estimation of the prior of each class. Please note that the priors are stored using the logarithm in the variable `priors.` 
+سابقًا، تم تمثيل الفئات باستخدام الأعداد الطبيعية. ارتبطت الفئة الإيجابية بالرقم $$1$$، بينما السلبية بـ $$0$$. ومع ذلك، في مجموعة البيانات هذه، الفئات عبارة عن سلاسل نصية. وتقرر ترميزها كأرقام لتسهيل العمليات اللاحقة. يمكن إجراء عملية الترميز بالتزامن مع تقدير الاحتمال القبلي لكل فئة. يُرجى ملاحظة أن الاحتمالات القبلية مخزنة باستخدام اللوغاريتم في المتغير `priors.`
 
 ```python
 uniq_labels, priors = np.unique([k for _, k in D], return_counts=True)
@@ -325,7 +325,7 @@ priors = np.log(priors / priors.sum())
 uniq_labels = {str(v): k for k, v in enumerate(uniq_labels)}
 ```
 
-It is time to estimate the likelihood parameters for each of the classes. It is assumed that the data comes from a Categorical distribution and that each token is independent. The likelihood parameters can be stored in a matrix (variable `l_tokens`) with $$K$$ rows, each row contains the parameters of the class, and the number of columns corresponds to the vocabulary's size. The first step is to calculate the frequency of each token per class which can be done with the following code. 
+حان الوقت لتقدير معلمات الاحتمالية لكل من الفئات. يُفترض أن البيانات تأتي من توزيع فئوي وأن كل رمز مستقل. يمكن تخزين معلمات الاحتمالية في مصفوفة (المتغير `l_tokens`) بـ $$K$$ من الصفوف، يحتوي كل صف على معلمات الفئة، وعدد الأعمدة يتوافق مع حجم المفردات. الخطوة الأولى هي حساب تكرار كل رمز لكل فئة وهو ما يمكن القيام به باستخدام الكود التالي.
 
 ```python
 l_tokens = np.zeros((len(uniq_labels), len(w2id)))
@@ -336,7 +336,7 @@ for x, y in D:
         w[w2id[i]] += v
 ```
 
-The next step is to normalize the frequency. However, before normalizing it, it is being used a Laplace smoothing with a value $$0.1$$. Therefore, the constant $$0.1$$ is added to all the matrix elements. The next step is to normalize (second line), and finally, the parameters are stored using the logarithm. 
+الخطوة التالية هي معايرة التكرار. ومع ذلك، قبل معايرتها، يتم استخدام تنعيم لابلاس بقيمة $$0.1$$. لذلك، يتم إضافة الثابت $$0.1$$ إلى جميع عناصر المصفوفة. الخطوة التالية هي المعايرة (السطر الثاني)، وأخيرًا، يتم تخزين المعلمات باستخدام اللوغاريتم.
 
 ```python
 l_tokens += 0.1
@@ -344,9 +344,9 @@ l_tokens = l_tokens / np.atleast_2d(l_tokens.sum(axis=1)).T
 l_tokens = np.log(l_tokens)
 ```
 
-## Prediction
+## التنبؤ (Prediction)
 
-Once all the parameters have been estimated, it is time to use the model to classify any text. The following function computes the posterior distribution. The first step is to tokenize the text (second line) and compute the frequency of each token in the text. The frequency stored in the dictionary `cnt` is converted into the vector `x` using the mapping function `w2id`. The final step is to compute the product of the likelihood and the prior. The product is computed in log-space; thus, this is done using the likelihood and the prior sum. The last step is to compute the evidence and normalize the result; the evidence is computed with the function `logsumexp.` 
+بمجرد تقدير جميع المعلمات، حان الوقت لاستخدام النموذج لتصنيف أي نص. تحسب الدالة التالية التوزيع البعدي. الخطوة الأولى هي تقطيع النص (السطر الثاني) وحساب تكرار كل رمز في النص. يتحول التكرار المخزن في القاموس `cnt` إلى المتجه `x` باستخدام دالة التعيين `w2id`. الخطوة النهائية هي حساب حاصل ضرب الاحتمالية والاحتمال القبلي. يتم حساب حاصل الضرب في الفضاء اللوغاريتمي؛ وبالتالي، يتم ذلك باستخدام مجموع الاحتمالية والاحتمال القبلي. الخطوة الأخيرة هي حساب الدليل ومعايرة النتيجة؛ يتم حساب الدليل بالدالة `logsumexp.`
 
 ```python
 def posterior(txt):
@@ -362,7 +362,7 @@ def posterior(txt):
     return l
 ```
 
-The posterior function can predict all the text in $$\mathcal D$$; the predictions are used to compute the model's accuracy. In order to compute the accuracy, the classes in $$\mathcal D$$ need to be transformed using the nomenclature of the likelihood matrix and priors vector; this is done with the `uniq_labels` dictionary (second line). 
+يمكن لدالة الاحتمال البعدي التنبؤ بجميع النصوص في $$\mathcal D$$؛ وتُستخدم التنبؤات لحساب دقة النموذج. من أجل حساب الدقة، يلزم تحويل الفئات في $$\mathcal D$$ باستخدام تسمية مصفوفة الاحتمالية ومتجه الاحتمالات القبلية؛ ويتم ذلك باستخدام القاموس `uniq_labels` (السطر الثاني).
 
 ```python
 hy = np.array([posterior(x).argmax() for x, _ in D])
@@ -371,9 +371,9 @@ y = np.array([uniq_labels[y] for _, y in D])
 0.974
 ```
 
-## Training
+## التدريب (Training)
 
-Solving supervised learning problems requires two phases; one is the training phase, and the other is the prediction. The posterior function handles the later phase, and it is missing to organize the code described in a training function. The following code describes the training function; it requires the dataset's parameters and an instance of `TextModel.`
+يتطلب حل مسائل التعلم الخاضع للإشراف مرحلتين؛ إحداهما هي مرحلة التدريب، والأخرى هي التنبؤ. تتعامل دالة الاحتمال البعدي مع المرحلة الأخيرة، ويتبقى تنظيم الكود الموصوف في دالة تدريب. يصف الكود التالي دالة التدريب؛ وتتطلب معلمات مجموعة البيانات ومثيل من `TextModel.`
 
 ```python
 def training(D, tm):
@@ -397,19 +397,19 @@ def training(D, tm):
     return w2id, uniq_labels, l_tokens, priors
 ```
 
-# Performance
+# التقييم والأداء (Performance)
 
-The performance of a supervised learning algorithm cannot be measured on the same data where it was trained. To illustrate this issue, imagine an algorithm that memorizes the dataset, and for all inputs that have not been seen, the algorithm outputs a random class. Consequently, this algorithm is useless because it cannot be used to predict an input outside the dataset used to train it. Nonetheless, it has a perfect score, in any performance measure, in the dataset used to estimate its parameters. 
+لا يمكن قياس أداء خوارزمية التعلم الخاضع للإشراف على نفس البيانات التي تدربت عليها. لتوضيح هذه المشكلة، تخيل خوارزمية تحفظ مجموعة البيانات، ولجميع المدخلات التي لم تُشاهد، تخرج الخوارزمية فئة عشوائية. وبالتالي، فإن هذه الخوارزمية غير مفيدة لأنه لا يمكن استخدامها للتنبؤ بمدخلات خارج مجموعة البيانات المستخدمة لتدريبها. ومع ذلك، فإن لها درجة مثالية، في أي مقياس أداء، في مجموعة البيانات المستخدمة لتقدير معلماتها.
 
-Traditionally, this issue is handle by splitting the dataset $$\mathcal D$$ into two disjoint sets, $$\mathcal D = \mathcal T \cup \mathcal G$$ where $$\mathcal T \cap \mathcal G = \emptyset$$, or three sets $$\mathcal D = \mathcal T \cup \mathcal V \cup \mathcal G$$ where $$\mathcal T \cap \mathcal V \cap \mathcal G = \emptyset$$. The set $$\mathcal T$$, known as **training set**, is used to train the algorithm, i.e., to estimate the parameters, whereas the set $$\mathcal G$$, known as **test set** or **gold set**, is used to measure its performance. The set $$\mathcal V$$, known as **validation set**, is used to optimize the algorithm's hyperparameters; for example, a hyperparameter in an n-gram language model is the value of $$n$$.
+تقليديًا، يتم التعامل مع هذه المشكلة عن طريق تقسيم مجموعة البيانات $$\mathcal D$$ إلى مجموعتين منفصلتين، $$\mathcal D = \mathcal T \cup \mathcal G$$ حيث $$\mathcal T \cap \mathcal G = \emptyset$$, أو ثلاث مجموعات $$\mathcal D = \mathcal T \cup \mathcal V \cup \mathcal G$$ حيث $$\mathcal T \cap \mathcal V \cap \mathcal G = \emptyset$$. تُستخدم المجموعة $$\mathcal T$$، المعروفة باسم **مجموعة التدريب (Training set)**، لتدريب الخوارزمية، أي لتقدير المعلمات، بينما تسمى المجموعة $$\mathcal G$$، **مجموعة الاختبار (Test set)** أو **المجموعة الذهبية (Gold set)**، وتُستخدم لقياس أدائها. وتستخدم المجموعة $$\mathcal V$$، المعروفة باسم **مجموعة التحقق (Validation set)**، لتحسين المعلمات الفائقة (Hyperparameters) للخوارزمية؛ على سبيل المثال، فإن المعلمة الفائقة في نموذج اللغة n-gram هي قيمة $$n$$.
 
-## KFold and StratifiedKFold
+## التجميع الطبقي KFold و StratifiedKFold
 
-There are scenarios where the size of $$\mathcal D$$ prohibits splitting it in training, validation and test sets; for this case, an alternative approach is to split $$\mathcal D$$ several times with a different selection each time. The process is known as k-fold cross-validation when all the elements in $$\mathcal D$$ are used once in a validation set. For example, the k-fold cross-validation when $$k=3$$ corresponds to the following process. The set $$\mathcal D$$ is split into three disjoint sets $$\mathcal D_1, \mathcal D_2, \mathcal D_3$$ where $$\mathcal D=\mathcal D_1 \cup \mathcal D_2 \cup \mathcal D_3;$$ with the characteristic that all the subsets have a similar cardinality. These datasets are used to create three training and validation sets, i.e., $$\mathcal T_1=\mathcal D_2 \cup \mathcal D_3$$, $$\mathcal V_1=\mathcal D_1$$, $$\mathcal T_2=\mathcal D_1 \cup \mathcal D_3$$, $$\mathcal V_2=\mathcal D_2$$, and $$\mathcal T_3=\mathcal D_1 \cup \mathcal D_2$$, $$\mathcal V_3=\mathcal D_3.$$ As can be observed all the elements in $$\mathcal D$$ are used once in a validation set.
+هناك سيناريوهات يمنع فيها حجم $$\mathcal D$$ تقسيمها إلى مجموعات تدريب وتحقق واختبار؛ في هذه الحالة، يكون المنهج البديل هو تقسيم $$\mathcal D$$ عدة مرات باختيار مختلف في كل مرة. وتُعرف هذه العملية باسم التحقق المتقاطع k-fold (k-fold cross-validation) عندما تُستخدم جميع العناصر في $$\mathcal D$$ مرة واحدة في مجموعة التحقق. على سبيل المثال، يتوافق التحقق المتقاطع k-fold عندما تكون $$k=3$$ مع العملية التالية. يتم تقسيم المجموعة $$\mathcal D$$ إلى ثلاث مجموعات منفصلة $$\mathcal D_1, \mathcal D_2, \mathcal D_3$$ حيث $$\mathcal D=\mathcal D_1 \cup \mathcal D_2 \cup \mathcal D_3;$$ بالخاصية التي تجعل جميع المجموعات الفرعية ذات أصل مماثل. وتُستخدم مجموعات البيانات هذه لإنشاء ثلاث مجموعات تدريب وتحقق، أي $$\mathcal T_1=\mathcal D_2 \cup \mathcal D_3$$, و $$\mathcal V_1=\mathcal D_1$$, و $$\mathcal T_2=\mathcal D_1 \cup \mathcal D_3$$, و $$\mathcal V_2=\mathcal D_2$$, و $$\mathcal T_3=\mathcal D_1 \cup \mathcal D_2$$, و $$\mathcal V_3=\mathcal D_3.$$ وكما يمكن ملاحظته، تُستخدم جميع العناصر في $$\mathcal D$$ مرة واحدة في مجموعة التحقق.
 
-The only constraints imposed in a k-fold cross are that all validation sets have a similar cardinality and that all the elements in $$\mathcal D$$ appear once. For problems where the proportion of the different classes is unbalanced, adding another constraint in the selection process is helpful; the constraint is to force the distribution of classes to remain similar in all the validation sets. This latter process is known as stratified k-fold cross-validation. 
+القيود الوحيدة المفروضة في تقاطع k-fold هي أن جميع مجموعات التحقق لها أصل مماثل وأن جميع العناصر في $$\mathcal D$$ تظهر مرة واحدة. بالنسبة للمسائل التي تكون فيها نسبة الفئات المختلفة غير متوازنة، يكون من المفيد إضافة قيد آخر في عملية الاختيار؛ والقيد هو إجبار توزيع الفئات على البقاء متشابهاً في جميع مجموعات التحقق. وتُعرف هذه العملية الأخيرة باسم التحقق المتقاطع الطبقي k-fold (Stratified k-fold cross-validation).
 
-The following code implements stratified k-fold cross-validation, predicts all the elements in $$\mathcal D$$, and stores the predictions in the variable `hy.` 
+ينفذ الكود التالي التحقق المتقاطع الطبقي k-fold، ويتنبأ بجميع العناصر في $$\mathcal D$$، ويخزن التنبؤات في المتغير `hy.`
 
 ```python
 D = [(x['text'], x['klass']) for x in tweet_iterator(TWEETS)]
@@ -422,7 +422,7 @@ for tr, val in folds.split(D, y):
     hy[val] = [posterior(D[x][0]).argmax() for x in val]
 ```
 
-Once the classes in $$\mathcal D$$ has been predicted, one can compute the accuracy of the classifier with the following code. It can be observed that the accuracy is lower than the one obtained when it was measured on the same data used to estimate the parameters.
+بمجرد التنبؤ بالفئات في $$\mathcal D$$، يمكن حساب دقة المصنف بالكود التالي. يمكن ملاحظة أن الدقة أقل من تلك التي تم الحصول عليها عندما تم قياسها على نفس البيانات المستخدمة لتقدير المعلمات.
 
 ```python
 y = np.array([uniq_labels[y] for _, y in D])
@@ -430,7 +430,7 @@ y = np.array([uniq_labels[y] for _, y in D])
 0.618
 ```
 
-The confidence interval of the accuracy is computed as follows.
+تتم حساب فترة الثقة للدقة كما يلي.
 
 ```python
 p = (hy == y).mean()
@@ -441,26 +441,26 @@ ci
 (0.5878856141926456, 0.6481143858073544)
 ```
 
-## Precision, Recall, and F1-score
+## الضبط، الاستدعاء، ومقياس F1 (Precision, Recall, and F1-score)
 
-The accuracy is a popular performance measure; however, it has drawbacks. For example, in a dataset where one class is more frequent than the other, e.g., there are 99 examples of the negative class and only one example of the positive one, then the accuracy for the classifier that always predicts negative is .99. This performance can be seen as adequate; however, the classifier defined is constant, not even looking at the inputs. 
+الدقة (Accuracy) مقياس أداء شائع؛ ومع ذلك، لها عيوب. على سبيل المثال، في مجموعة بيانات تكون فيها إحدى الفئات أكثر تكرارًا من الأخرى، مثل وجود 99 مثالاً للفئة السلبية ومثال واحد فقط للفئة الإيجابية، فإن دقة المصنف الذي يتنبأ دائمًا بالسلبية تكون .99. يمكن النظر إلى هذا الأداء على أنه كافٍ؛ ومع ذلك، فإن المصنف المحدد ثابت، ولا ينظر حتى في المدخلات.
 
-Other famous metrics used in classification are precision, recall, and score $$f_1$$. These performance measures are defined on binary classification problems; however, k-class classification problems can be codified as $$k$$ binary problems; in each of these problems, the positive class is one of the classes, and the negative class is the union of the rest of the classes.
+المقاييس الشهيرة الأخرى المستخدمة في التصنيف هي الضبط (Precision)، والاستدعاء (Recall)، ومقياس $$f_1$$. يتم تعريف مقاييس الأداء هذه في مسائل التصنيف الثنائي؛ ومع ذلك، يمكن ترميز مسائل التصنيف k-class كـ $$k$$ من المسائل الثنائية؛ في كل من هذه المسائل، تكون الفئة الإيجابية إحدى الفئات، وتكون الفئة السلبية هي اتحاد بقية الفئات.
 
-The precision is the proportion of correct classification of positive objects, that is, $$\textsf{precision}(\mathbf y, \hat{\mathbf y}) = \frac{\sum_i \mathbb 1(\mathbf y_i = 1) \mathbb 1(\mathbf{\hat y_i} = 1) }{\sum_i \mathbb 1(\mathbf{ \hat y_i = 1})}.$$ On the other hand, the recall is $$\textsf{recall}(\mathbf y, \hat{\mathbf y}) = \frac{\sum_i \mathbb 1(\mathbf y_i = 1) \mathbb 1(\mathbf{\hat y_i} = 1) }{\sum_i \mathbb 1(\mathbf{y_i = 1})}.$$ The next code uses two functions from `sklearn` to compute the precision and recall.
+الضبط (Precision) هو نسبة التصنيف الصحيح للكائنات الإيجابية، أي $$\textsf{precision}(\mathbf y, \hat{\mathbf y}) = \frac{\sum_i \mathbb 1(\mathbf y_i = 1) \mathbb 1(\mathbf{\hat y_i} = 1) }{\sum_i \mathbb 1(\mathbf{ \hat y_i = 1})}.$$ من ناحية أخرى، فإن الاستدعاء (Recall) هو $$\textsf{recall}(\mathbf y, \hat{\mathbf y}) = \frac{\sum_i \mathbb 1(\mathbf y_i = 1) \mathbb 1(\mathbf{\hat y_i} = 1) }{\sum_i \mathbb 1(\mathbf{y_i = 1})}.$$ يستخدم الكود التالي دالتين من `sklearn` لحساب الضبط والاستدعاء.
 
 ```python
 p = precision_score(y, hy, average=None)
 r = recall_score(y, hy, average=None)
 ```
 
-Furthermore, the score $$f_1$$ is defined in terms of the precision and recall; it is the harmonic mean $$f_1 = 2 \frac{\textsf{precision} \cdot \textsf{recall}}{\textsf{precision} + \textsf{recall}}$$.
+علاوة على ذلك، يتم تعريف مقياس $$f_1$$ بمصطلحي الضبط والاستدعاء؛ وهو المتوسط التوافقي $$f_1 = 2 \frac{\textsf{precision} \cdot \textsf{recall}}{\textsf{precision} + \textsf{recall}}$$.
 
 ```python
 f1_score(y, hy, average=None)
 ```
 
-The precision, recall, and score $$f_1$$ are defined on binary classification problems, and these measures are most of the time computed for the positive class; however, nothing prohibits computing it for the other class; in the previous code, it is only needed to change $$1$$ to $$0$$. Additionally, it is possible to calculate these measures for all the classes in a $$K$$ classification problem, and the result is to have one measure per class; the average of these values is known as *macro*. The following code computes the confidence interval of the macro-recall obtained from the predictions of $$\mathcal D$$ using stratified k-fold cross-validation.
+يتم تعريف الضبط، والاستدعاء، ومقياس $$f_1$$ في مسائل التصنيف الثنائي، وتتم حساب هذه المقاييس في معظم الأوقات للفئة الإيجابية؛ ومع ذلك، لا يوجد ما يمنع حسابها للفئة الأخرى؛ في الكود السابق، يلزم فقط تغيير $$1$$ إلى $$0$$. بالإضافة إلى ذلك، من الممكن حساب هذه المقاييس لجميع الفئات في مسألة تصنيف $$K$$، وتكون النتيجة الحصول على مقياس واحد لكل فئة؛ ومتوسط هذه القيم يُعرف باسم *Macro*. يحسب الكود التالي فترة الثقة لـ macro-recall المحصول عليها من التنبؤات في $$\mathcal D$$ باستخدام التحقق المتقاطع الطبقي k-fold.
 
 ```python
 metric = lambda a, b: recall_score(a, b, average='macro')
@@ -470,9 +470,9 @@ ci
 (0.4006296585578326, 0.4415247767402683)
 ```
 
-# Tokenizer
+# المحلل اللفظي (Tokenizer)
 
-One of the critical components in the text categorization algorithm is the method used to tokenize the text; changing the tokenizer's parameters impacts the classifier's performance, e.g., the following code shows an example where the tokenizer used the default parameters. An increase in performance can be observed, albeit both confidence intervals overlap, so it cannot be concluded that one set of parameters is better than the other.
+أحد المكونات الحسمية في خوارزمية تصنيف النصوص هو الطريقة المستخدمة لتقطيع النص؛ ويؤثر تغيير معلمات المحلل اللفظي على أداء المصنف، على سبيل المثال، يظهر الكود التالي مثالاً حيث استخدم المحلل اللفظي المعلمات الافتراضية. يمكن ملاحظة زيادة في الأداء، ولكن كلتا فترتي الثقة تتداخلان، لذلك لا يمكن الاستنتاج بأن مجموعة معينة من المعلمات أفضل من الأخرى.
 
 ```python
 tm = TextModel()
@@ -490,4 +490,3 @@ ci = bootstrap_confidence_interval(y, hy,
 ci
 (0.4326075670113598, 0.47454989683417365)
 ```
-
